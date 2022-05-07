@@ -41,7 +41,8 @@
 				}
 			}
 		</script>
-		
+
+	<script type="module" src="jsm/carModelLoader.js"></script>
 	<script type="module">
 
 	import * as THREE from 'three';
@@ -51,10 +52,8 @@
 	import { OBJLoader } from './jsm/loaders/OBJLoader.js';
 
 	import {Car} from './jsm/car.js';
-
-	Car.vec3;
-			
-
+	import * as CarModelLoader from './jsm/carModelLoader.js'
+	
 	//create the scene
 	var scene = new THREE.Scene( );
     var ratio = window.innerWidth/window.innerHeight;
@@ -65,7 +64,7 @@
     //set the camera position
     camera.position.set(0,0,15);
     // and the direction
-	  camera.lookAt(0,0,1);
+	camera.lookAt(0,0,1);
 
     //create the webgl renderer
     var renderer = new THREE.WebGLRenderer( );
@@ -85,6 +84,7 @@
  	var cameralight = new THREE.PointLight( new THREE.Color(1,1,1), 1 );
  	camera.add( cameralight );
  	scene.add(camera);
+	CarModelLoader.addCarToScene(5, scene);
 
 	 //final update loop
 	 var MyUpdateLoop = function ( )
