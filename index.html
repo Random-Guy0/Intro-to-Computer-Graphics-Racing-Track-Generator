@@ -31,6 +31,9 @@
       <p></p>
     </div>
 
+	<script src="jsm/physics/ammo.wasm.js"></script>
+	<script src="jsm/car.js"></script>
+
 		<script type="importmap">
 			{
 				"imports": {
@@ -46,6 +49,10 @@
 
 	import { MTLLoader } from './jsm/loaders/MTLLoader.js';
 	import { OBJLoader } from './jsm/loaders/OBJLoader.js';
+
+	import {Car} from './jsm/car.js';
+
+	Car.vec3;
 			
 
 	//create the scene
