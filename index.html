@@ -32,7 +32,6 @@
     </div>
 
 	<script src="jsm/physics/ammo.wasm.js"></script>
-	<script src="jsm/car.js"></script>
 
 		<script type="importmap">
 			{
@@ -41,6 +40,7 @@
 				}
 			}
 		</script>
+		<script src="jsm/car.js" type="module"></script>
 		
 	<script type="module">
 
@@ -50,10 +50,9 @@
 	import { MTLLoader } from './jsm/loaders/MTLLoader.js';
 	import { OBJLoader } from './jsm/loaders/OBJLoader.js';
 
-	import {Car} from './jsm/car.js';
+	import Car from './jsm/car.js';
 
-	Car.vec3;
-			
+	var car = new Car();
 
 	//create the scene
 	var scene = new THREE.Scene( );

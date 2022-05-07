@@ -1,9 +1,17 @@
-class Car
+import { EventDispatcher } from "../build/three.module.js";
+
+class Car extends EventDispatcher
 {
-    constructor(vec3)
+    constructor()
     {
-        this.vec3 = new THREE.Vector3();
+        super();
+        this.test();
+    }
+
+    test()
+    {
+        console.log("hello");
     }
 }
 
-export {Car};
+export default Car;
