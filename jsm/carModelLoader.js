@@ -5,16 +5,27 @@ import {OBJLoader} from './loaders/OBJLoader.js'
 const CAR_MODEL_DIRECTORY = "/models/car.obj"
 const CAR_MATERIAL_DIRECTORY = "/models/car.mtl"
 
-function addCarToScene (carSize, targetScene) {
+var bodyMat
+var diskMat
+var tyreMat
+var wheelMat
+var windowMat
+
+function addCarToScene (carSize, targetScene, bodyColor = 0x000000, diskColor = 0xFFFFFF, tyreColor = 0x080808, wheelColor = 0xFFFFFF, windowTint = 0xEEEEFF) {
     var mtlLoader = new MTLLoader()
     mtlLoader.load(CAR_MATERIAL_DIRECTORY, (materials) => {
         materials.preload()
-        materials.materials.color.color.set(0xFFBBBB)   // Colour of the car
-        materials.materials.disk.color.set(0xFFFFFF)    // Colour of the brake disk
+        bodyMat = materials.materials.color
+        diskMat = materials.materials.disk
+        tyreMat = materials.materials.tyre
+        wheelMat = materials.materials.wheel
+        windowMat = materials.materials.window
+        bodyMat.color.set(bodyColor)   // Colour of the car
+        diskMat.color.set(diskColor)    // Colour of the brake disk
         //materials.materials.elements.color.set(0xFFFFFF)  // Front light, side mirrors, etc
-        materials.materials.tyre.color.set(0x000000)    // Colour of the Tyre
-        materials.materials.wheel.color.set(0xFFFFFF)    // Colour of the wheels
-        materials.materials.window.color.set(0xFFFFFF)    // Colour of the windows
+        tyreMat.color.set(tyreColor)    // Colour of the Tyre
+        wheelMat.color.set(wheelColor)    // Colour of the wheels
+        windowMat.color.set(windowTint)    // Colour of the windows
 
         var loader = new OBJLoader()
         loader.setMaterials(materials)
@@ -67,6 +78,17 @@ function addCarToScene (carSize, targetScene) {
     })
 }
 
+function updateCarMaterial (bodyColor = 0x000000, diskColor = 0xFFFFFF, tyreColor = 0x080808, wheelColor = 0xFFFFFF, windowTint = 0xEEEEFF) {
+    if(!(bodyMat && diskMat && tyreMat && wheelMat && windowMat)) return
+    bodyMat.color.set(bodyColor)   // Colour of the car
+    diskMat.color.set(diskColor)    // Colour of the brake disk
+    //materials.materials.elements.color.set(0xFFFFFF)  // Front light, side mirrors, etc
+    tyreMat.color.set(tyreColor)    // Colour of the Tyre
+    wheelMat.color.set(wheelColor)    // Colour of the wheels
+    windowMat.color.set(windowTint)    // Colour of the windows
+}
+
 export {
+    updateCarMaterial,
     addCarToScene
 }

@@ -84,7 +84,10 @@
  	var cameralight = new THREE.PointLight( new THREE.Color(1,1,1), 1 );
  	camera.add( cameralight );
  	scene.add(camera);
+
+	 //Add car to scene
 	CarModelLoader.addCarToScene(5, scene);
+	
 
 	 //final update loop
 	 var MyUpdateLoop = function ( )
@@ -115,6 +118,14 @@
   	//link the resize of the window to the update of the camera
   	window.addEventListener( 'resize', MyResize);
 
+	const onKeyDown = (event) => {
+		switch(event.keyCode)
+		{
+			case 32: 
+				CarModelLoader.updateCarMaterial(0xFF0000, 0xFFFFFF, 0xFFFFFF, 0x000000, 0xFFFFFF)
+		}
+	}
+	window.addEventListener('keydown', onKeyDown, false)
 	
     </script>
   </body>
