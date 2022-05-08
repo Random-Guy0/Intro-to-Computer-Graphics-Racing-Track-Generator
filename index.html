@@ -148,11 +148,11 @@
 	{
 		gui = new dat.GUI()
 		carColours = gui.addFolder('Colours')
-		carColours.addColor(carColourProperties, 'body_colour')
-		carColours.addColor(carColourProperties, 'disk_colour')
-		carColours.addColor(carColourProperties, 'tyre_colour')
-		carColours.addColor(carColourProperties, 'wheel_colour')
-		carColours.addColor(carColourProperties, 'window_tint')
+		carColours.addColor(carColourProperties, 'body_colour').onChange(val => {CarModelLoader.updateCarMaterial (val, carColourProperties.disk_colour, carColourProperties.tyre_colour, carColourProperties.wheel_colour, carColourProperties.window_tint)})
+		carColours.addColor(carColourProperties, 'disk_colour').onChange(val => {CarModelLoader.updateCarMaterial (carColourProperties.body_colour, val, carColourProperties.tyre_colour, carColourProperties.wheel_colour, carColourProperties.window_tint)})
+		carColours.addColor(carColourProperties, 'tyre_colour').onChange(val => {CarModelLoader.updateCarMaterial (carColourProperties.body_colour, carColourProperties.disk_colour, val, carColourProperties.wheel_colour, carColourProperties.window_tint)})
+		carColours.addColor(carColourProperties, 'wheel_colour').onChange(val => {CarModelLoader.updateCarMaterial (carColourProperties.body_colour, carColourProperties.disk_colour, carColourProperties.tyre_colour, val, carColourProperties.window_tint)})
+		carColours.addColor(carColourProperties, 'window_tint').onChange(val => {CarModelLoader.updateCarMaterial (carColourProperties.body_colour, carColourProperties.disk_colour, carColourProperties.tyre_colour, carColourProperties.wheel_colour, val)})
 		gui.open()	
 		guiBuilt = true
 	}
