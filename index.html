@@ -88,13 +88,14 @@
 
 	 //Add car to scene
 	CarModelLoader.addCarToScene(5, scene);
-	var carColourProperties = {}
-	var carMaterialsLoaded = false	// Flag for when car materials has been loaded
-	var guiBuilt = false			// Flag for when gui has been built
-	const carMatLoaded = () => {
-		carColourProperties = CarModelLoader.getMaterialsObject()
-		return !(carColourProperties == {})
+	var carColourProperties = {
+		body_colour: 0x000000,
+		disk_colour: 0x000000,
+		tyre_colour: 0x000000,
+		wheel_colour: 0x000000,
+		window_tint: 0x000000
 	}
+	var guiBuilt = false			// Flag for when gui has been built
 
 	 //final update loop
 	 var MyUpdateLoop = function ( )
@@ -105,11 +106,9 @@
     	controls.update();
 
 		if(!guiBuilt) {
-			if(carMaterialsLoaded) {
+			if(CarModelLoader.matLoaded) {
+				carColourProperties = CarModelLoader.getMaterialsObject()
 				buildGUI()
-			}
-			else {
-				carMaterialsLoaded = carMatLoaded()
 			}
 		}
     	//finally perform a recoursive call to update again

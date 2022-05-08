@@ -5,13 +5,22 @@ import {OBJLoader} from './loaders/OBJLoader.js'
 const CAR_MODEL_DIRECTORY = "/models/car.obj"
 const CAR_MATERIAL_DIRECTORY = "/models/car.mtl"
 
+// #region DEFAULT COLOURS
+const DEF_BODY_COL = 0x000000
+const DEF_DISK_COL = 0xFFFFFF
+const DEF_TYRE_COL = 0x080808
+const DEF_WHEEL_COL = 0xFFFFFF
+const DEF_WINDOW_COL = 0xEEEEFF
+// #endregion
+
 var bodyMat
 var diskMat
 var tyreMat
 var wheelMat
 var windowMat
+var matLoaded = false
 
-function addCarToScene (carSize, targetScene, bodyColor = 0x000000, diskColor = 0xFFFFFF, tyreColor = 0x080808, wheelColor = 0xFFFFFF, windowTint = 0xEEEEFF) {
+function addCarToScene (carSize, targetScene, bodyColor = DEF_BODY_COL, diskColor = DEF_DISK_COL, tyreColor = DEF_TYRE_COL, wheelColor = DEF_WHEEL_COL, windowTint = DEF_WINDOW_COL) {
     var mtlLoader = new MTLLoader()
     mtlLoader.load(CAR_MATERIAL_DIRECTORY, (materials) => {
         materials.preload()
@@ -75,7 +84,12 @@ function addCarToScene (carSize, targetScene, bodyColor = 0x000000, diskColor = 
             obj.name = "Car"
             targetScene.add(obj)
         })
-    })
+    },
+    (xhr) => {
+        if(xhr.loaded/xhr.total == 1) matLoaded = true
+    }
+    )
+    
 }
 
 function updateCarMaterial (bodyColor = 0x000000, diskColor = 0xFFFFFF, tyreColor = 0x080808, wheelColor = 0xFFFFFF, windowTint = 0xEEEEFF) {
@@ -89,6 +103,7 @@ function updateCarMaterial (bodyColor = 0x000000, diskColor = 0xFFFFFF, tyreColo
 }
 
 function getMaterialsObject() {
+    console.log([bodyMat, diskMat, tyreMat, wheelMat, windowMat])
     if((bodyMat && diskMat && tyreMat && wheelMat && windowMat)){
         return {
             body_colour: bodyMat.color.getHex(),
@@ -99,7 +114,14 @@ function getMaterialsObject() {
         }
     }
     else {
-        return {}
+        // js pain
+        return {
+            body_colour: DEF_BODY_COL,
+            disk_colour: DEF_DISK_COL,
+            tyre_colour: DEF_TYRE_COL,
+            wheel_colour: DEF_WHEEL_COL,
+            window_tint: DEF_WINDOW_COL
+        }
     }
     
 }
@@ -107,5 +129,6 @@ function getMaterialsObject() {
 export {
     updateCarMaterial,
     addCarToScene,
-    getMaterialsObject
+    getMaterialsObject,
+    matLoaded
 }
