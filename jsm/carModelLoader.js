@@ -88,7 +88,24 @@ function updateCarMaterial (bodyColor = 0x000000, diskColor = 0xFFFFFF, tyreColo
     windowMat.color.set(windowTint)    // Colour of the windows
 }
 
+function getMaterialsObject() {
+    if((bodyMat && diskMat && tyreMat && wheelMat && windowMat)){
+        return {
+            body_colour: bodyMat.color.getHex(),
+		    disk_colour: diskMat.color.getHex(),
+		    tyre_colour: tyreMat.color.getHex(),
+		    wheel_colour: wheelMat.color.getHex(),
+		    window_tint: windowMat.color.getHex()
+        }
+    }
+    else {
+        return {}
+    }
+    
+}
+
 export {
     updateCarMaterial,
-    addCarToScene
+    addCarToScene,
+    getMaterialsObject
 }

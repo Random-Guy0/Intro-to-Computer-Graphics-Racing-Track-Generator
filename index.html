@@ -43,6 +43,7 @@
 		</script>
 
 	<script type="module" src="jsm/carModelLoader.js"></script>
+	<script src="jsm/dat.gui.min.js"></script>
 	<script type="module">
 
 	import * as THREE from 'three';
@@ -87,7 +88,13 @@
 
 	 //Add car to scene
 	CarModelLoader.addCarToScene(5, scene);
-	
+	var carColourProperties = {}
+	var carMaterialsLoaded = false	// Flag for when car materials has been loaded
+	var guiBuilt = false			// Flag for when gui has been built
+	const carMatLoaded = () => {
+		carColourProperties = CarModelLoader.getMaterialsObject()
+		return !(carColourProperties == {})
+	}
 
 	 //final update loop
 	 var MyUpdateLoop = function ( )
@@ -97,6 +104,14 @@
 
     	controls.update();
 
+		if(!guiBuilt) {
+			if(carMaterialsLoaded) {
+				buildGUI()
+			}
+			else {
+				carMaterialsLoaded = carMatLoaded()
+			}
+		}
     	//finally perform a recoursive call to update again
     	//this must be called because the mouse change the camera position
     	requestAnimationFrame(MyUpdateLoop);
@@ -126,6 +141,22 @@
 		}
 	}
 	window.addEventListener('keydown', onKeyDown, false)
+
+	var gui
+	var carColours
+	const buildGUI = () =>
+	{
+		gui = new dat.GUI()
+		carColours = gui.addFolder('Colours')
+		carColours.addColor(carColourProperties, 'body_colour')
+		carColours.addColor(carColourProperties, 'disk_colour')
+		carColours.addColor(carColourProperties, 'tyre_colour')
+		carColours.addColor(carColourProperties, 'wheel_colour')
+		carColours.addColor(carColourProperties, 'window_tint')
+		gui.open()	
+		guiBuilt = true
+	}
+	
 	
     </script>
   </body>
