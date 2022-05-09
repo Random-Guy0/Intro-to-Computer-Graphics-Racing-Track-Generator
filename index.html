@@ -40,7 +40,7 @@
 				}
 			}
 		</script>
-		<script src="jsm/car.js" type="module"></script>
+		<script src="jsm/CarControls.js" type="module"></script>
 		
 	<script type="module">
 
@@ -50,10 +50,10 @@
 	import { MTLLoader } from './jsm/loaders/MTLLoader.js';
 	import { OBJLoader } from './jsm/loaders/OBJLoader.js';
 
-	import Car from './jsm/car.js';
+	import CarControls from './jsm/CarControls.js';
 
-	var car = new Car();
-
+	var car = new CarControls();
+	
 	//create the scene
 	var scene = new THREE.Scene( );
     var ratio = window.innerWidth/window.innerHeight;
