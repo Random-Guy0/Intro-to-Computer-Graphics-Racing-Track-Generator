@@ -42,6 +42,9 @@
 		</script>
 		<script src="jsm/CarControls.js" type="module"></script>
 		
+
+	<script type="module" src="jsm/carModelLoader.js"></script>
+	<script src="jsm/dat.gui.min.js"></script>
 	<script type="module">
 
 	import * as THREE from 'three';
@@ -53,6 +56,8 @@
 	import CarControls from './jsm/CarControls.js';
 
 	var car = new CarControls();
+	import {Car} from './jsm/car.js';
+	import * as CarModelLoader from './jsm/carModelLoader.js'
 	
 	//create the scene
 	var scene = new THREE.Scene( );
@@ -64,7 +69,7 @@
     //set the camera position
     camera.position.set(0,0,15);
     // and the direction
-	  camera.lookAt(0,0,1);
+	camera.lookAt(0,0,1);
 
     //create the webgl renderer
     var renderer = new THREE.WebGLRenderer( );
@@ -85,6 +90,17 @@
  	camera.add( cameralight );
  	scene.add(camera);
 
+	 //Add car to scene
+	CarModelLoader.addCarToScene(5, scene);
+	var carColourProperties = {
+		body_colour: 0x000000,
+		disk_colour: 0x000000,
+		tyre_colour: 0x000000,
+		wheel_colour: 0x000000,
+		window_tint: 0x000000
+	}
+	var guiBuilt = false			// Flag for when gui has been built
+
 	 //final update loop
 	 var MyUpdateLoop = function ( )
   	{
@@ -93,6 +109,12 @@
 
     	controls.update();
 
+		if(!guiBuilt) {
+			if(CarModelLoader.matLoaded) {
+				carColourProperties = CarModelLoader.getMaterialsObject()
+				buildGUI()
+			}
+		}
     	//finally perform a recoursive call to update again
     	//this must be called because the mouse change the camera position
     	requestAnimationFrame(MyUpdateLoop);
@@ -114,6 +136,30 @@
   	//link the resize of the window to the update of the camera
   	window.addEventListener( 'resize', MyResize);
 
+	const onKeyDown = (event) => {
+		switch(event.keyCode)
+		{
+			case 32: 
+				CarModelLoader.updateCarMaterial(0xFF0000, 0xFFFFFF, 0xFFFFFF, 0x000000, 0xFFFFFF)
+		}
+	}
+	window.addEventListener('keydown', onKeyDown, false)
+
+	var gui
+	var carColours
+	const buildGUI = () =>
+	{
+		gui = new dat.GUI()
+		carColours = gui.addFolder('Colours')
+		carColours.addColor(carColourProperties, 'body_colour').onChange(val => {CarModelLoader.updateCarMaterial (val, carColourProperties.disk_colour, carColourProperties.tyre_colour, carColourProperties.wheel_colour, carColourProperties.window_tint)})
+		carColours.addColor(carColourProperties, 'disk_colour').onChange(val => {CarModelLoader.updateCarMaterial (carColourProperties.body_colour, val, carColourProperties.tyre_colour, carColourProperties.wheel_colour, carColourProperties.window_tint)})
+		carColours.addColor(carColourProperties, 'tyre_colour').onChange(val => {CarModelLoader.updateCarMaterial (carColourProperties.body_colour, carColourProperties.disk_colour, val, carColourProperties.wheel_colour, carColourProperties.window_tint)})
+		carColours.addColor(carColourProperties, 'wheel_colour').onChange(val => {CarModelLoader.updateCarMaterial (carColourProperties.body_colour, carColourProperties.disk_colour, carColourProperties.tyre_colour, val, carColourProperties.window_tint)})
+		carColours.addColor(carColourProperties, 'window_tint').onChange(val => {CarModelLoader.updateCarMaterial (carColourProperties.body_colour, carColourProperties.disk_colour, carColourProperties.tyre_colour, carColourProperties.wheel_colour, val)})
+		gui.open()	
+		guiBuilt = true
+	}
+	
 	
     </script>
   </body>
