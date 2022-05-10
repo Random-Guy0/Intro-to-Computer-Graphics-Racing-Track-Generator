@@ -59,6 +59,8 @@
 
 	var physicsWorld = new CANNON.World();
 	physicsWorld.gravity.set(0, -9.8, 0);
+	physicsWorld.broadphase = new CANNON.NaiveBroadphase();
+	physicsWorld.solver.iterations = 10;
 
 	//create the scene
 	var scene = new THREE.Scene( );
@@ -68,7 +70,7 @@
     var camera = new THREE.PerspectiveCamera(45,ratio,0.1,1000);
 
     //set the camera position
-    camera.position.set(0,0,15);
+    camera.position.set(0,5,15);
     // and the direction
 	camera.lookAt(0,0,1);
 
@@ -106,10 +108,14 @@
 
 	var carControls;
 
+	var meshes = [], bodies = [];
+
+	var groundMat = new CANNON.Material();
+
 	function tempGround()
 	{
 		var pos = {x: 0, y: -5, z: 0};
-		var scale = {x: 50, y: 2, z: 50};
+		var scale = {x: 150, y: 2, z: 150};
 		var quat = {x: 0, y: 0, z: 0, w: 1};
 
 		var plane = new THREE.Mesh(new THREE.BoxBufferGeometry(), new THREE.MeshPhongMaterial());
@@ -121,39 +127,43 @@
 
 		scene.add(plane);
 
+		var shape = new CANNON.Box(new CANNON.Vec3(scale.x * 0.5, scale.y * 0.5, scale.z * 0.5));
+
 		var groundBody = new CANNON.Body({
-			mass: 0
+			mass: 0,
+			material: groundMat
 		})
-		groundBody.addShape(plane);
+		groundBody.addShape(shape);
+		groundBody.position.set(pos.x, pos.y, pos.z);
 		physicsWorld.addBody(groundBody);
 	}
 	tempGround();
-
 
 	 //final update loop
 	 var MyUpdateLoop = function ( )
   	{
 		var deltaTime = clock.getDelta();
 
-		if(true)
+		if(carControls == null && scene.getObjectByName("Car") != null)
 		{
-			if(carControls == null && scene.getObjectByName("Car") != null)
-			{
-				var car = scene.getObjectByName("Car");
-				var rot = new THREE.Matrix4();
-				rot.makeRotationY(-Math.PI/2);
-				car.applyMatrix4(rot);
-				carControls = new CarControls(car, camera, 20, 5, THREE);
-				//var body = carControls.createRigidBody();
-				car.castShadow = true;
-			}
-			else if(carControls != null)
-			{
-				//carControls.move();
-			}
-
-			updatePhysics(deltaTime);
+			var car = scene.getObjectByName("Car");
+			car.rotateY(-Math.PI / 2);
+			car.attach(camera);
+			carControls = new CarControls(car, camera, 20, 0.8, THREE, CANNON, physicsWorld, groundMat);
+			var body = carControls.createRigidBody();
+			meshes.push(car);
+			physicsWorld.addBody(body);
+			bodies.push(body);
+			car.castShadow = true;
 		}
+		else if(carControls != null)
+		{
+			carControls.move(deltaTime);
+		}
+
+		updatePhysics(deltaTime);
+
+		updateCamera();
 
     	//call the render with the scene and the camera
     	renderer.render(scene,camera);
@@ -173,7 +183,22 @@
 
 	function updatePhysics(deltaTime)
 	{
-		
+		physicsWorld.step(deltaTime);
+
+		for(var i = 0; i < meshes.length; i++)
+		{
+			meshes[i].position.copy(bodies[i].position);
+			meshes[i].quaternion.copy(bodies[i].quaternion);
+		}
+	}
+
+	function updateCamera()
+	{
+		var car = scene.getObjectByName("Car");
+		if(car != null)
+		{
+			camera.lookAt(car.position);
+		}
 	}
 
 	requestAnimationFrame(MyUpdateLoop);
