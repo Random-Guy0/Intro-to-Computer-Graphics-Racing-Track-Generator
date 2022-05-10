@@ -31,8 +31,6 @@
       <p></p>
     </div>
 
-	<script src="jsm/physics/ammo.wasm.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
@@ -41,10 +39,10 @@
 			}
 		</script>
 		<script src="jsm/CarControls.js" type="module"></script>
-		
-
+	
 	<script type="module" src="jsm/carModelLoader.js"></script>
 	<script src="jsm/dat.gui.min.js"></script>
+	<script src="jsm/physics/cannon.js"></script>
 	<script type="module">
 
 	import * as THREE from 'three';
@@ -55,10 +53,13 @@
 
 	import CarControls from './jsm/CarControls.js';
 
-	var car = new CarControls();
-	import {Car} from './jsm/car.js';
 	import * as CarModelLoader from './jsm/carModelLoader.js'
 	
+	var clock = new THREE.Clock();
+
+	var physicsWorld = new CANNON.World();
+	physicsWorld.gravity.set(0, -9.8, 0);
+
 	//create the scene
 	var scene = new THREE.Scene( );
     var ratio = window.innerWidth/window.innerHeight;
@@ -76,6 +77,8 @@
 
     //set the size of the rendering window
     renderer.setSize(window.innerWidth,window.innerHeight);
+	renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     //add the renderer to the current document
     document.body.appendChild(renderer.domElement );
@@ -101,9 +104,57 @@
 	}
 	var guiBuilt = false			// Flag for when gui has been built
 
+	var carControls;
+
+	function tempGround()
+	{
+		var pos = {x: 0, y: -5, z: 0};
+		var scale = {x: 50, y: 2, z: 50};
+		var quat = {x: 0, y: 0, z: 0, w: 1};
+
+		var plane = new THREE.Mesh(new THREE.BoxBufferGeometry(), new THREE.MeshPhongMaterial());
+		plane.material.color = new THREE.Color(1, 1, 1);
+
+		plane.position.set(pos.x, pos.y, pos.z);
+		plane.scale.set(scale.x, scale.y, scale.z);
+		plane.receiveShadow = true;
+
+		scene.add(plane);
+
+		var groundBody = new CANNON.Body({
+			mass: 0
+		})
+		groundBody.addShape(plane);
+		physicsWorld.addBody(groundBody);
+	}
+	tempGround();
+
+
 	 //final update loop
 	 var MyUpdateLoop = function ( )
   	{
+		var deltaTime = clock.getDelta();
+
+		if(true)
+		{
+			if(carControls == null && scene.getObjectByName("Car") != null)
+			{
+				var car = scene.getObjectByName("Car");
+				var rot = new THREE.Matrix4();
+				rot.makeRotationY(-Math.PI/2);
+				car.applyMatrix4(rot);
+				carControls = new CarControls(car, camera, 20, 5, THREE);
+				//var body = carControls.createRigidBody();
+				car.castShadow = true;
+			}
+			else if(carControls != null)
+			{
+				//carControls.move();
+			}
+
+			updatePhysics(deltaTime);
+		}
+
     	//call the render with the scene and the camera
     	renderer.render(scene,camera);
 
@@ -120,7 +171,12 @@
     	requestAnimationFrame(MyUpdateLoop);
   	};
 
-  	requestAnimationFrame(MyUpdateLoop);
+	function updatePhysics(deltaTime)
+	{
+		
+	}
+
+	requestAnimationFrame(MyUpdateLoop);
 
 	//this fucntion is called when the window is resized
 	var MyResize = function ( )
