@@ -137,7 +137,7 @@ class CarControls
 
     setVariable(carProperties) {
         this.moveSpeed = carProperties.move_speed
-        this.turnSpeed = carProperties.turnSpeed
+        this.turnSpeed = carProperties.turn_speed
     }
 }
 

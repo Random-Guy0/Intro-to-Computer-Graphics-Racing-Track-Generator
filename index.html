@@ -97,6 +97,8 @@
 
 	 //Add car to scene
 	CarModelLoader.addCarToScene(5, scene);
+
+	// Adjustable variables
 	var carColourProperties = {
 		body_colour: 0x000000,
 		disk_colour: 0x000000,
@@ -105,10 +107,17 @@
 		window_tint: 0x000000
 	}
 
-	// Adjustable variables
 	var carPhysicsProperties = {
 		move_speed: 20.0,
 		turn_speed: 0.8
+	}
+
+	var worldProperties = {
+		gravity: 9.8,	// Multiplied by -1
+		background_colour: 0x000000,
+		fog_colour: 0xFFFFFF,
+		fog_near: 1,
+		fog_far: 1000
 	}
 
 	var guiBuilt = false			// Flag for when gui has been built
@@ -165,7 +174,6 @@
 		}
 		else if(carControls != null)
 		{
-			carControls.setVariable(carPhysicsProperties);
 			carControls.move(deltaTime);
 		}
 
@@ -234,9 +242,18 @@
 	}
 	window.addEventListener('keydown', onKeyDown, false)
 
+	var saveAndLoadConfig = {
+		save_config: () => {
+
+		},
+		load_config: () => {
+
+		}
+	}
 	var gui
 	var carColours
 	var carPhysics
+	var worldPropertyGUI
 	const buildGUI = () =>
 	{
 		gui = new dat.GUI()
@@ -250,8 +267,21 @@
 		
 		// Car Physics folder
 		carPhysics = gui.addFolder('Car Physics')
-		carPhysics.add(carPhysicsProperties, 'move_speed', 0.5, 40, 0.5)
-		carPhysics.add(carPhysicsProperties, 'turn_speed', 0.8, 1, 0.05)
+		carPhysics.add(carPhysicsProperties, 'move_speed', 0.5, 40, 0.5).onChange(_ => carControls.setVariable(carPhysicsProperties))
+		carPhysics.add(carPhysicsProperties, 'turn_speed', 0.00, 1, 0.05).onChange(_ => carControls.setVariable(carPhysicsProperties))
+
+		// World Property folder
+		worldPropertyGUI = gui.addFolder('World Properties')
+		// gravity
+		// background colour
+		// fog
+
+		// Camera FOV
+
+		// Save config
+
+		// Load config
+
 		gui.open()	
 		guiBuilt = true
 	}
