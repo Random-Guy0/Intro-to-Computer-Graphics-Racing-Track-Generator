@@ -115,10 +115,16 @@
 	var worldProperties = {
 		gravity: 9.8,	// Multiplied by -1
 		background_colour: 0x000000,
-		fog_colour: 0xFFFFFF,
+		fog_colour: 0x000000,
 		fog_near: 1,
-		fog_far: 1000
+		fog_far: 50
 	}
+	scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far)
+	
+	var cameraProperties = {
+		fov: 45
+	}
+	
 
 	var guiBuilt = false			// Flag for when gui has been built
 
@@ -237,19 +243,11 @@
 		switch(event.keyCode)
 		{
 			case 32: 
-				CarModelLoader.updateCarMaterial(0xFF0000, 0xFFFFFF, 0xFFFFFF, 0x000000, 0xFFFFFF)
+				//CarModelLoader.updateCarMaterial(0xFF0000, 0xFFFFFF, 0xFFFFFF, 0x000000, 0xFFFFFF)
 		}
 	}
 	window.addEventListener('keydown', onKeyDown, false)
 
-	var saveAndLoadConfig = {
-		save_config: () => {
-
-		},
-		load_config: () => {
-
-		}
-	}
 	var gui
 	var carColours
 	var carPhysics
@@ -272,16 +270,17 @@
 
 		// World Property folder
 		worldPropertyGUI = gui.addFolder('World Properties')
-		// gravity
-		// background colour
-		// fog
+		worldPropertyGUI.add(worldProperties, 'gravity', 0.0, 20.0, 0.05).onChange(val => physicsWorld.gravity.set(0, -val, 0))
+		worldPropertyGUI.addColor(worldProperties, 'background_colour').onChange(val => scene.background = new THREE.Color(val))
+		worldPropertyGUI.addColor(worldProperties, 'fog_colour').onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
+		worldPropertyGUI.add(worldProperties, 'fog_near', 0, 1500, 1).onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
+		worldPropertyGUI.add(worldProperties, 'fog_far', 10, 2000, 1).onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
 
 		// Camera FOV
-
-		// Save config
-
-		// Load config
-
+		gui.add(cameraProperties, 'fov', 25, 100).onChange(val => {
+			camera.fov = val
+			camera.updateProjectionMatrix();
+		})
 		gui.open()	
 		guiBuilt = true
 	}
