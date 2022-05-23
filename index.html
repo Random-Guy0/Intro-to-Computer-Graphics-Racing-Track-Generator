@@ -43,6 +43,7 @@
 	<script type="module" src="jsm/carModelLoader.js"></script>
 	<script src="jsm/dat.gui.min.js"></script>
 	<script src="jsm/physics/cannon.js"></script>
+	<script src="jsm/perlin.js"></script>
 	<script type="module">
 
 	import * as THREE from 'three';
@@ -70,7 +71,7 @@
     var camera = new THREE.PerspectiveCamera(45,ratio,0.1,1000);
 
     //set the camera position
-    camera.position.set(0,5,15);
+    camera.position.set(0,10,15);
     // and the direction
 	camera.lookAt(0,0,1);
 
@@ -112,12 +113,13 @@
 
 	var groundMat = new CANNON.Material();
 
-	function tempGround()
+	function createGround()
 	{
+		/*
 		var pos = {x: 0, y: -5, z: 0};
-		var scale = {x: 150, y: 2, z: 150};
-		var quat = {x: 0, y: 0, z: 0, w: 1};
+		var scale = {x: 150, y: 1, z: 150};
 
+		
 		var plane = new THREE.Mesh(new THREE.BoxBufferGeometry(), new THREE.MeshPhongMaterial());
 		plane.material.color = new THREE.Color(1, 1, 1);
 
@@ -126,18 +128,58 @@
 		plane.receiveShadow = true;
 
 		scene.add(plane);
+		*/
 
-		var shape = new CANNON.Box(new CANNON.Vec3(scale.x * 0.5, scale.y * 0.5, scale.z * 0.5));
+		var geometry = new THREE.PlaneGeometry(1000, 1000, 128, 128);
+		var material = new THREE.MeshLambertMaterial({color: 0x32a852});
+		var terrain = new THREE.Mesh(geometry, material);
+		terrain.rotation.x = -Math.PI / 2;
+		scene.add(terrain);
+
+		noise.seed(Math.random());
+		var peak = 60;
+		var smoothing = 300;
+		var rawVertices = geometry.attributes.position.array;
+		for(var i = 0; i <= rawVertices.length; i+=3)
+		{
+			rawVertices[i+2] = peak * noise.perlin2(rawVertices[i] / smoothing, rawVertices[i + 1] / smoothing);
+		}
+		geometry.attributes.position.needsUpdate = true;
+		geometry.computeVertexNormals();
+
+		//geometry = THREE.BufferGeometryUtils.mergeVertices(geometry);
+
+		var position = geometry.attributes.position.array
+
+		var rawFaces = 	geometry.index.array;
+
+		var vertices = [];
+		var faces = [];
+
+		for(var i = 0; i < position.length; i += 3)
+		{
+			vertices.push(new CANNON.Vec3(position[i], position[i + 1], position[i + 2]));
+		}
+
+		
+		for(var i = 0; i < rawFaces.length; i += 3)
+		{
+			faces.push(rawFaces[i], rawFaces[i + 1], rawFaces[i + 2]);
+		}
+
+		//var shape = new CANNON.ConvexPolyhedron(vertices, faces);
+		//var shape = new CANNON.Trimesh(position, rawFaces);
+		var shape = new CANNON.Box(new CANNON.Vec3(1000, 1, 1000));
 
 		var groundBody = new CANNON.Body({
 			mass: 0,
 			material: groundMat
 		})
 		groundBody.addShape(shape);
-		groundBody.position.set(pos.x, pos.y, pos.z);
+		//groundBody.position.set(pos.x, pos.y, pos.z);
 		physicsWorld.addBody(groundBody);
 	}
-	tempGround();
+	createGround();
 
 	 //final update loop
 	 var MyUpdateLoop = function ( )
@@ -147,6 +189,7 @@
 		if(carControls == null && scene.getObjectByName("Car") != null)
 		{
 			var car = scene.getObjectByName("Car");
+			car.position.y += 5;
 			car.rotateY(-Math.PI / 2);
 			car.attach(camera);
 			carControls = new CarControls(car, camera, 20, 0.8, THREE, CANNON, physicsWorld, groundMat);
