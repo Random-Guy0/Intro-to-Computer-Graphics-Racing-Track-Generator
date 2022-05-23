@@ -45,7 +45,7 @@
 	<script src="jsm/physics/cannon.js"></script>
 	<script src="jsm/perlin.js"></script>
 	<script type="module">
-
+	// Imports
 	import * as THREE from 'three';
 	import { OrbitControls } from './jsm/controls/OrbitControls.js';
 
@@ -98,6 +98,8 @@
 
 	 //Add car to scene
 	CarModelLoader.addCarToScene(5, scene);
+
+	// Adjustable variables
 	var carColourProperties = {
 		body_colour: 0x000000,
 		disk_colour: 0x000000,
@@ -105,6 +107,26 @@
 		wheel_colour: 0x000000,
 		window_tint: 0x000000
 	}
+
+	var carPhysicsProperties = {
+		move_speed: 20.0,
+		turn_speed: 0.8
+	}
+
+	var worldProperties = {
+		gravity: 9.8,	// Multiplied by -1
+		background_colour: 0x000000,
+		fog_colour: 0x000000,
+		fog_near: 1,
+		fog_far: 50
+	}
+	scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far)
+	
+	var cameraProperties = {
+		fov: 45
+	}
+	
+
 	var guiBuilt = false			// Flag for when gui has been built
 
 	var carControls;
@@ -192,7 +214,7 @@
 			car.position.y += 5;
 			car.rotateY(-Math.PI / 2);
 			car.attach(camera);
-			carControls = new CarControls(car, camera, 20, 0.8, THREE, CANNON, physicsWorld, groundMat);
+			carControls = new CarControls(car, camera, carPhysicsProperties.move_speed, carPhysicsProperties.turn_speed, THREE, CANNON, physicsWorld, groundMat);
 			var body = carControls.createRigidBody();
 			meshes.push(car);
 			physicsWorld.addBody(body);
@@ -264,22 +286,44 @@
 		switch(event.keyCode)
 		{
 			case 32: 
-				CarModelLoader.updateCarMaterial(0xFF0000, 0xFFFFFF, 0xFFFFFF, 0x000000, 0xFFFFFF)
+				//CarModelLoader.updateCarMaterial(0xFF0000, 0xFFFFFF, 0xFFFFFF, 0x000000, 0xFFFFFF)
 		}
 	}
 	window.addEventListener('keydown', onKeyDown, false)
 
 	var gui
 	var carColours
+	var carPhysics
+	var worldPropertyGUI
 	const buildGUI = () =>
 	{
 		gui = new dat.GUI()
+		// Colours folder
 		carColours = gui.addFolder('Colours')
 		carColours.addColor(carColourProperties, 'body_colour').onChange(val => {CarModelLoader.updateCarMaterial (val, carColourProperties.disk_colour, carColourProperties.tyre_colour, carColourProperties.wheel_colour, carColourProperties.window_tint)})
 		carColours.addColor(carColourProperties, 'disk_colour').onChange(val => {CarModelLoader.updateCarMaterial (carColourProperties.body_colour, val, carColourProperties.tyre_colour, carColourProperties.wheel_colour, carColourProperties.window_tint)})
 		carColours.addColor(carColourProperties, 'tyre_colour').onChange(val => {CarModelLoader.updateCarMaterial (carColourProperties.body_colour, carColourProperties.disk_colour, val, carColourProperties.wheel_colour, carColourProperties.window_tint)})
 		carColours.addColor(carColourProperties, 'wheel_colour').onChange(val => {CarModelLoader.updateCarMaterial (carColourProperties.body_colour, carColourProperties.disk_colour, carColourProperties.tyre_colour, val, carColourProperties.window_tint)})
 		carColours.addColor(carColourProperties, 'window_tint').onChange(val => {CarModelLoader.updateCarMaterial (carColourProperties.body_colour, carColourProperties.disk_colour, carColourProperties.tyre_colour, carColourProperties.wheel_colour, val)})
+		
+		// Car Physics folder
+		carPhysics = gui.addFolder('Car Physics')
+		carPhysics.add(carPhysicsProperties, 'move_speed', 0.5, 40, 0.5).onChange(_ => carControls.setVariable(carPhysicsProperties))
+		carPhysics.add(carPhysicsProperties, 'turn_speed', 0.00, 1, 0.05).onChange(_ => carControls.setVariable(carPhysicsProperties))
+
+		// World Property folder
+		worldPropertyGUI = gui.addFolder('World Properties')
+		worldPropertyGUI.add(worldProperties, 'gravity', 0.0, 20.0, 0.05).onChange(val => physicsWorld.gravity.set(0, -val, 0))
+		worldPropertyGUI.addColor(worldProperties, 'background_colour').onChange(val => scene.background = new THREE.Color(val))
+		worldPropertyGUI.addColor(worldProperties, 'fog_colour').onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
+		worldPropertyGUI.add(worldProperties, 'fog_near', 0, 1500, 1).onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
+		worldPropertyGUI.add(worldProperties, 'fog_far', 10, 2000, 1).onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
+
+		// Camera FOV
+		gui.add(cameraProperties, 'fov', 25, 100).onChange(val => {
+			camera.fov = val
+			camera.updateProjectionMatrix();
+		})
 		gui.open()	
 		guiBuilt = true
 	}

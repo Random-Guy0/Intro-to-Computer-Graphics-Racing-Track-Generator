@@ -134,6 +134,11 @@ class CarControls
         var centerInWorldCoords = this.body.pointToWorldFrame(new this.CANNON.Vec3());
         this.body.applyForce(drag, centerInWorldCoords);
     }
+
+    setVariable(carProperties) {
+        this.moveSpeed = carProperties.move_speed
+        this.turnSpeed = carProperties.turn_speed
+    }
 }
 
 export default CarControls;
