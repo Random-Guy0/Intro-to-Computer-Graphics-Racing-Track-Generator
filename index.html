@@ -157,6 +157,7 @@
 		var terrain = new THREE.Mesh(geometry, material);
 		terrain.rotation.x = -Math.PI / 2;
 		scene.add(terrain);
+		terrain.updateMatrixWorld();
 
 		noise.seed(Math.random());
 		var peak = 60;
