@@ -3,6 +3,8 @@
     Each chunk contains a heightmap, as well as the mesh and physics body
 */
 import * as THREE from 'three'
+//import {noise} from './perlin.js'
+import * as CANNON from 'cannon-es'
 
 /**
  * Represents a chunk
@@ -19,18 +21,38 @@ class Chunk {
     heightMap
     chunkMesh
     chunkPhysicsBody
-    
+
     split       // The number of vertices in a chunk is exactly this squared
     chunkSize   // Size of the chunk
 
     noiseSeed   // Seed for perlin noise
 
-    constructor(xChunkCoordinate, yChunkCoordinate, chunkSize, split, noiseSeed) {
+    constructor(xChunkCoordinate, yChunkCoordinate, chunkSize, split, noiseSeed, targetScene, physicsWorld) {
         this.xChunkCoordinate = xChunkCoordinate
         this.yChunkCoordinate = yChunkCoordinate
         this.chunkSize = chunkSize
-        this.split = split
-        this.heightMap = this.generateHeightMap()
+        this.split = split - 1
+        this.noiseSeed = noiseSeed
+        this.height = 60
+        this.smoothing = 300
+        this.heightMap2D = [[]]
+
+        this.geometry = new THREE.PlaneGeometry(this.chunkSize, this.chunkSize, this.split, this.split)
+        this.material = new THREE.MeshLambertMaterial({ color: 0x00FF00 })
+        this.material.wireframe = true
+
+        this.generateHeightMap().then(
+            () => {
+                this.chunkMesh = this.generateVisual()
+                this.chunkMesh.position.set(-xChunkCoordinate * chunkSize, 0, -yChunkCoordinate * chunkSize)
+                targetScene.add(this.chunkMesh)
+            }
+        )
+        this.chunkPhysicsBody = this.generatePhysics()
+        physicsWorld.addBody(this.chunkPhysicsBody)
+
+
+
     }
 
     /**
@@ -38,15 +60,32 @@ class Chunk {
      * @returns A 2D array representing the height map
      */
     generateHeightMap() {
-        var ret = []
-        for(var x = 0; x < this.split; x++) {
-            var row = []
-            for(var y = 0; y < this.split; y++) {
-                row.push(0/* Height goes here, generated with perlin noise */)
+        return new Promise(
+            (resolve, reject) => {
+                noise.seed(this.noiseSeed);
+                var rawVertices = this.geometry.attributes.position.array;
+                console.log(rawVertices)
+                let temp = []
+                let iter = 0
+                let ret = []
+                for (var i = 0; i <= rawVertices.length; i += 3) {
+                    if(iter == 128) {
+                        iter = 0
+                        ret.push(temp)
+                        temp = []
+                    }
+                    temp.push(this.height * noise.perlin2((rawVertices[i] + this.chunkSize*this.xChunkCoordinate) / this.smoothing, (rawVertices[i + 1] + this.chunkSize*this.yChunkCoordinate) / this.smoothing))
+                    /* let v = 1
+                    if(iter >=64) v = 10
+                    temp.push(v) */
+                    iter++
+                }
+                this.heightMap2D = ret
+                this.heightMap = ret.flat()
+                console.log(ret)
+                resolve()
             }
-            ret.push(row)
-        }
-        return ret
+        )
     }
 
     /**
@@ -54,18 +93,18 @@ class Chunk {
      * @returns THREE.js mesh
      */
     generateVisual() {
-        if(this.heightMap != undefined) console.log("ERROR: Heightmap does not exists")
-        const geometry = new THREE.PlaneGeometry(chunkSize, chunkSize, split, split)
-        const material = new THREE.MeshLambertMaterial({color: 0x00FF00})               // Green flooring
+        let mesh = new THREE.Mesh(this.geometry, this.material)
+        mesh.rotation.x = -Math.PI / 2
 
-        let mesh = new THREE.Mesh(geometry, material)
-        
         var rawVertices = mesh.geometry.getAttribute('position').array
-        for(var i = 0; i < rawVertices.length; i += 3) {
-            rawVertices[i+2] = this.heightMap[i/3]
+        console.log(this.heightMap.length)
+        console.log(rawVertices.length/3)
+        for (var i = 0; i < this.heightMap.length; i++) {
+            rawVertices[i * 3 + 2] = this.heightMap[i]
         }
         mesh.geometry.getAttribute('position').needsUpdate = true
         mesh.geometry.computeVertexNormals()
+        
 
         return mesh
     }
@@ -75,8 +114,22 @@ class Chunk {
      * @returns Physics body
      */
     generatePhysics() {
-        if(this.heightMap != undefined) console.log("ERROR: Heightmap does not exists")
-        return // Physics body
+        const heightFieldShape = new CANNON.Heightfield(this.heightMap2D, {
+            elementSize: this.chunkSize / this.split,
+          })
+        const groundMaterial = new CANNON.Material('ground')
+        const heightfieldBody = new CANNON.Body({ friction: 0, mass: 0, material: groundMaterial })
+        heightfieldBody.addShape(heightFieldShape)
+
+        heightfieldBody.position.set(
+          (-(this.split) * heightFieldShape.elementSize) / 2 -this.xChunkCoordinate * this.chunkSize,
+          0,
+          (-(this.split) * heightFieldShape.elementSize) / 2 -this.yChunkCoordinate * this.chunkSize
+        )
+        heightfieldBody.quaternion.setFromEuler(-Math.PI / 2, 0, -Math.PI / 2)
+
+
+        return heightfieldBody// Physics body
     }
 
     /**
@@ -95,3 +148,5 @@ class Chunk {
 
     }
 }
+
+export default Chunk

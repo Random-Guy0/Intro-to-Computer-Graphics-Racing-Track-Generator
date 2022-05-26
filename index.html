@@ -1,335 +1,334 @@
 <html>
-  <head>
-    <title></title>
-  </head>
 
-  <style>
-  body {margin: 0;}
-  canvas {width: 100%; height: 100%;}
-  </style>
+<head>
+	<title></title>
+</head>
 
-  <body>
+<style>
+	body {
+		margin: 0;
+	}
 
-   
-    <style>
-    			body {
-    				font-family: Monospace;
-    				background-color: #000;
-    				color: #fff;
-    				margin: 0px;
-    				overflow: hidden;
-    			}
-    			#info {
-    				position: absolute;
-    				top: 10px;
-    				width: 100%;
-    				text-align: center;
-    			}
-    </style>
+	canvas {
+		width: 100%;
+		height: 100%;
+	}
+</style>
 
-    <div id="info">
-      <p></p>
-    </div>
+<body>
 
-		<script type="importmap">
+
+	<style>
+		body {
+			font-family: Monospace;
+			background-color: #000;
+			color: #fff;
+			margin: 0px;
+			overflow: hidden;
+		}
+
+		#info {
+			position: absolute;
+			top: 10px;
+			width: 100%;
+			text-align: center;
+		}
+	</style>
+
+	<div id="info">
+		<p></p>
+	</div>
+
+	<script type="importmap">
 			{
 				"imports": {
-					"three": "../build/three.module.js"
+					"three": "../build/three.module.js",
+					"cannon-es": "https://cdn.jsdelivr.net/gh/pmndrs/cannon-es@0.19.0/dist/cannon-es.js",
+					"cannon-debug": "https://cdn.jsdelivr.net/gh/pmndrs/cannon-es-debugger@1.0.0/dist/cannon-es-debugger.js"
 				}
 			}
 		</script>
-		<script src="jsm/CarControls.js" type="module"></script>
-	
+	<script src="jsm/CarControls.js" type="module"></script>
+
 	<script type="module" src="jsm/carModelLoader.js"></script>
 	<script src="jsm/dat.gui.min.js"></script>
-	<script src="jsm/physics/cannon.js"></script>
+	<!-- <script src="jsm/physics/cannon.js"></script> -->
 	<script src="jsm/perlin.js"></script>
 	<script type="module">
-	// Imports
-	import * as THREE from 'three';
-	import { OrbitControls } from './jsm/controls/OrbitControls.js';
+		// Imports
+		import * as THREE from 'three';
+		import * as CANNON from 'cannon-es'
+		import CannonDebugger from 'cannon-debug'
+		import { OrbitControls } from './jsm/controls/OrbitControls.js';
 
-	import { MTLLoader } from './jsm/loaders/MTLLoader.js';
-	import { OBJLoader } from './jsm/loaders/OBJLoader.js';
+		import { MTLLoader } from './jsm/loaders/MTLLoader.js';
+		import { OBJLoader } from './jsm/loaders/OBJLoader.js';
 
-	import CarControls from './jsm/CarControls.js';
+		import CarControls from './jsm/CarControls.js';
+		import Chunk from './jsm/Chunk.js'
 
-	import * as CarModelLoader from './jsm/carModelLoader.js'
-	
-	var clock = new THREE.Clock();
+		import * as CarModelLoader from './jsm/carModelLoader.js'
 
-	var physicsWorld = new CANNON.World();
-	physicsWorld.gravity.set(0, -9.8, 0);
-	physicsWorld.broadphase = new CANNON.NaiveBroadphase();
-	physicsWorld.solver.iterations = 10;
+		var clock = new THREE.Clock();
 
-	//create the scene
-	var scene = new THREE.Scene( );
-    var ratio = window.innerWidth/window.innerHeight;
-    //create the perspective camera
-    //for parameters see https://threejs.org/docs/#api/cameras/PerspectiveCamera
-    var camera = new THREE.PerspectiveCamera(45,ratio,0.1,1000);
-
-    //set the camera position
-    camera.position.set(0,10,15);
-    // and the direction
-	camera.lookAt(0,0,1);
-
-    //create the webgl renderer
-    var renderer = new THREE.WebGLRenderer( );
-
-    //set the size of the rendering window
-    renderer.setSize(window.innerWidth,window.innerHeight);
-	renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-    //add the renderer to the current document
-    document.body.appendChild(renderer.domElement );
-
-	// add the new control and link to the current camera to transform its position
-
-  	var controls = new OrbitControls( camera, renderer.domElement );
-
-	
- 	//then add lighting
- 	var cameralight = new THREE.PointLight( new THREE.Color(1,1,1), 1 );
- 	camera.add( cameralight );
- 	scene.add(camera);
-
-	 //Add car to scene
-	CarModelLoader.addCarToScene(5, scene);
-
-	// Adjustable variables
-	var carColourProperties = {
-		body_colour: 0x000000,
-		disk_colour: 0x000000,
-		tyre_colour: 0x000000,
-		wheel_colour: 0x000000,
-		window_tint: 0x000000
-	}
-
-	var carPhysicsProperties = {
-		move_speed: 20.0,
-		turn_speed: 0.8
-	}
-
-	var worldProperties = {
-		gravity: 9.8,	// Multiplied by -1
-		background_colour: 0x000000,
-		fog_colour: 0x000000,
-		fog_near: 1,
-		fog_far: 50
-	}
-	scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far)
-	
-	var cameraProperties = {
-		fov: 45
-	}
-	
-
-	var guiBuilt = false			// Flag for when gui has been built
-
-	var carControls;
-
-	var meshes = [], bodies = [];
-
-	var groundMat = new CANNON.Material();
-
-	function createGround()
-	{
-		/*
-		var pos = {x: 0, y: -5, z: 0};
-		var scale = {x: 150, y: 1, z: 150};
+		var physicsWorld = new CANNON.World();
+		physicsWorld.gravity.set(0, -9.8, 0);
+		physicsWorld.broadphase = new CANNON.NaiveBroadphase();
+		physicsWorld.solver.iterations = 10;
 
 		
-		var plane = new THREE.Mesh(new THREE.BoxBufferGeometry(), new THREE.MeshPhongMaterial());
-		plane.material.color = new THREE.Color(1, 1, 1);
 
-		plane.position.set(pos.x, pos.y, pos.z);
-		plane.scale.set(scale.x, scale.y, scale.z);
-		plane.receiveShadow = true;
+		//create the scene
+		var scene = new THREE.Scene();
+		var ratio = window.innerWidth / window.innerHeight;
+		//create the perspective camera
+		//for parameters see https://threejs.org/docs/#api/cameras/PerspectiveCamera
+		var camera = new THREE.PerspectiveCamera(45, ratio, 0.1, 1000);
 
-		scene.add(plane);
-		*/
+		//set the camera position
+		camera.position.set(0, 10, 15);
+		// and the direction
+		camera.lookAt(0, 0, 1);
 
-		var geometry = new THREE.PlaneGeometry(1000, 1000, 128, 128);
-		var material = new THREE.MeshLambertMaterial({color: 0x32a852});
-		var terrain = new THREE.Mesh(geometry, material);
-		terrain.rotation.x = -Math.PI / 2;
-		scene.add(terrain);
-		terrain.updateMatrixWorld();
+		//create the webgl renderer
+		var renderer = new THREE.WebGLRenderer();
 
-		noise.seed(Math.random());
-		var peak = 60;
-		var smoothing = 300;
-		var rawVertices = geometry.attributes.position.array;
-		for(var i = 0; i <= rawVertices.length; i+=3)
-		{
-			rawVertices[i+2] = peak * noise.perlin2(rawVertices[i] / smoothing, rawVertices[i + 1] / smoothing);
-		}
-		geometry.attributes.position.needsUpdate = true;
-		geometry.computeVertexNormals();
+		//set the size of the rendering window
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		renderer.shadowMap.enabled = true;
+		renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-		//geometry = THREE.BufferGeometryUtils.mergeVertices(geometry);
+		//add the renderer to the current document
+		document.body.appendChild(renderer.domElement);
 
-		var position = geometry.attributes.position.array
+		// add the new control and link to the current camera to transform its position
 
-		var rawFaces = 	geometry.index.array;
+		var controls = new OrbitControls(camera, renderer.domElement);
 
-		var vertices = [];
-		var faces = [];
+		// Debug
+		const cannonDebugger = new CannonDebugger(scene, physicsWorld, {
+			color: 0xFF0000,
+		})	
 
-		for(var i = 0; i < position.length; i += 3)
-		{
-			vertices.push(new CANNON.Vec3(position[i], position[i + 1], position[i + 2]));
-		}
+		//then add lighting
+		var cameralight = new THREE.PointLight(new THREE.Color(1, 1, 1), 1);
+		camera.add(cameralight);
+		scene.add(camera);
 
-		
-		for(var i = 0; i < rawFaces.length; i += 3)
-		{
-			faces.push(rawFaces[i], rawFaces[i + 1], rawFaces[i + 2]);
-		}
+		//Add car to scene
+		CarModelLoader.addCarToScene(5, scene);
 
-		//var shape = new CANNON.ConvexPolyhedron(vertices, faces);
-		//var shape = new CANNON.Trimesh(position, rawFaces);
-		var shape = new CANNON.Box(new CANNON.Vec3(1000, 1, 1000));
-
-		var groundBody = new CANNON.Body({
-			mass: 0,
-			material: groundMat
-		})
-		groundBody.addShape(shape);
-		//groundBody.position.set(pos.x, pos.y, pos.z);
-		physicsWorld.addBody(groundBody);
-	}
-	createGround();
-
-	 //final update loop
-	 var MyUpdateLoop = function ( )
-  	{
-		var deltaTime = clock.getDelta();
-
-		if(carControls == null && scene.getObjectByName("Car") != null)
-		{
-			var car = scene.getObjectByName("Car");
-			car.position.y += 5;
-			car.rotateY(-Math.PI / 2);
-			car.attach(camera);
-			carControls = new CarControls(car, camera, carPhysicsProperties.move_speed, carPhysicsProperties.turn_speed, THREE, CANNON, physicsWorld, groundMat);
-			var body = carControls.createRigidBody();
-			meshes.push(car);
-			physicsWorld.addBody(body);
-			bodies.push(body);
-			car.castShadow = true;
-		}
-		else if(carControls != null)
-		{
-			carControls.move(deltaTime);
+		// Adjustable variables
+		var carColourProperties = {
+			body_colour: 0x000000,
+			disk_colour: 0x000000,
+			tyre_colour: 0x000000,
+			wheel_colour: 0x000000,
+			window_tint: 0x000000
 		}
 
-		updatePhysics(deltaTime);
+		var carPhysicsProperties = {
+			move_speed: 20.0,
+			turn_speed: 0.8
+		}
 
-		updateCamera();
+		var worldProperties = {
+			gravity: 9.8,	// Multiplied by -1
+			background_colour: 0x000000,
+			fog_colour: 0x000000,
+			fog_near: 1,
+			fog_far: 2000
+		}
+		scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far)
 
-    	//call the render with the scene and the camera
-    	renderer.render(scene,camera);
+		var cameraProperties = {
+			fov: 45
+		}
 
-    	controls.update();
 
-		if(!guiBuilt) {
-			if(CarModelLoader.matLoaded) {
-				carColourProperties = CarModelLoader.getMaterialsObject()
-				buildGUI()
+		var guiBuilt = false			// Flag for when gui has been built
+
+		var carControls;
+
+		var meshes = [], bodies = [];
+
+		var groundMat = new CANNON.Material();
+
+		/* function createGround()
+		{
+			var geometry = new THREE.PlaneGeometry(1000, 1000, 128, 128);
+			var material = new THREE.MeshLambertMaterial({color: 0x32a852});
+			var terrain = new THREE.Mesh(geometry, material);
+			terrain.rotation.x = -Math.PI / 2;
+			scene.add(terrain);
+			terrain.updateMatrixWorld();
+	
+			noise.seed(Math.random());
+			var peak = 60;
+			var smoothing = 300;
+			var rawVertices = geometry.attributes.position.array;
+			for(var i = 0; i <= rawVertices.length; i+=3)
+			{
+				rawVertices[i+2] = peak * noise.perlin2(rawVertices[i] / smoothing, rawVertices[i + 1] / smoothing);
+			}
+			geometry.attributes.position.needsUpdate = true;
+			geometry.computeVertexNormals();
+	
+			//geometry = THREE.BufferGeometryUtils.mergeVertices(geometry);
+	
+			var position = geometry.attributes.position.array
+	
+			var rawFaces = 	geometry.index.array;
+	
+			var vertices = [];
+			var faces = [];
+	
+			for(var i = 0; i < position.length; i += 3)
+			{
+				vertices.push(new CANNON.Vec3(position[i], position[i + 1], position[i + 2]));
+			}
+	
+			
+			for(var i = 0; i < rawFaces.length; i += 3)
+			{
+				faces.push(rawFaces[i], rawFaces[i + 1], rawFaces[i + 2]);
+			}
+	
+			//var shape = new CANNON.ConvexPolyhedron(vertices, faces);
+			//var shape = new CANNON.Trimesh(position, rawFaces);
+			var shape = new CANNON.Box(new CANNON.Vec3(1000, 1, 1000));
+	
+			var groundBody = new CANNON.Body({
+				mass: 0,
+				material: groundMat
+			})
+			groundBody.addShape(shape);
+			//groundBody.position.set(pos.x, pos.y, pos.z);
+			physicsWorld.addBody(groundBody);
+		}
+		createGround(); */
+
+		const seed = Math.random()
+		var chunk = new Chunk(0, 0, 1000, 128, seed, scene, physicsWorld)
+		var chunk = new Chunk(0, 1, 1000, 128, seed, scene, physicsWorld)
+		//final update loop
+		var MyUpdateLoop = function () {
+			var deltaTime = clock.getDelta();
+
+			if (carControls == null && scene.getObjectByName("Car") != null) {
+				var car = scene.getObjectByName("Car");
+				car.position.y += 5;
+				car.rotateY(-Math.PI / 2);
+				car.attach(camera);
+				carControls = new CarControls(car, camera, carPhysicsProperties.move_speed, carPhysicsProperties.turn_speed, THREE, CANNON, physicsWorld, groundMat);
+				var body = carControls.createRigidBody();
+				meshes.push(car);
+				physicsWorld.addBody(body);
+				bodies.push(body);
+				car.castShadow = true;
+			}
+			else if (carControls != null) {
+				carControls.move(deltaTime);
+			}
+
+			updatePhysics(deltaTime);
+			cannonDebugger.update()
+
+			updateCamera();
+
+			//call the render with the scene and the camera
+			renderer.render(scene, camera);
+
+			controls.update();
+
+			if (!guiBuilt) {
+				if (CarModelLoader.matLoaded) {
+					carColourProperties = CarModelLoader.getMaterialsObject()
+					buildGUI()
+				}
+			}
+			//finally perform a recoursive call to update again
+			//this must be called because the mouse change the camera position
+			requestAnimationFrame(MyUpdateLoop);
+		};
+
+		function updatePhysics(deltaTime) {
+			physicsWorld.step(deltaTime);
+
+			for (var i = 0; i < meshes.length; i++) {
+				meshes[i].position.copy(bodies[i].position);
+				meshes[i].quaternion.copy(bodies[i].quaternion);
 			}
 		}
-    	//finally perform a recoursive call to update again
-    	//this must be called because the mouse change the camera position
-    	requestAnimationFrame(MyUpdateLoop);
-  	};
 
-	function updatePhysics(deltaTime)
-	{
-		physicsWorld.step(deltaTime);
-
-		for(var i = 0; i < meshes.length; i++)
-		{
-			meshes[i].position.copy(bodies[i].position);
-			meshes[i].quaternion.copy(bodies[i].quaternion);
+		function updateCamera() {
+			var car = scene.getObjectByName("Car");
+			if (car != null) {
+				camera.lookAt(car.position);
+			}
 		}
-	}
 
-	function updateCamera()
-	{
-		var car = scene.getObjectByName("Car");
-		if(car != null)
-		{
-			camera.lookAt(car.position);
-		}
-	}
+		requestAnimationFrame(MyUpdateLoop);
 
-	requestAnimationFrame(MyUpdateLoop);
-
-	//this fucntion is called when the window is resized
-	var MyResize = function ( )
-  	{
-    	var width = window.innerWidth;
-    	var height = window.innerHeight;
-    	renderer.setSize(width,height);
-    	camera.aspect = width/height;
-    	camera.updateProjectionMatrix();
-    	renderer.render(scene,camera);
-  	};
-
-  	//link the resize of the window to the update of the camera
-  	window.addEventListener( 'resize', MyResize);
-
-	const onKeyDown = (event) => {
-		switch(event.keyCode)
-		{
-			case 32: 
-				//CarModelLoader.updateCarMaterial(0xFF0000, 0xFFFFFF, 0xFFFFFF, 0x000000, 0xFFFFFF)
-		}
-	}
-	window.addEventListener('keydown', onKeyDown, false)
-
-	var gui
-	var carColours
-	var carPhysics
-	var worldPropertyGUI
-	const buildGUI = () =>
-	{
-		gui = new dat.GUI()
-		// Colours folder
-		carColours = gui.addFolder('Colours')
-		carColours.addColor(carColourProperties, 'body_colour').onChange(val => {CarModelLoader.updateCarMaterial (val, carColourProperties.disk_colour, carColourProperties.tyre_colour, carColourProperties.wheel_colour, carColourProperties.window_tint)})
-		carColours.addColor(carColourProperties, 'disk_colour').onChange(val => {CarModelLoader.updateCarMaterial (carColourProperties.body_colour, val, carColourProperties.tyre_colour, carColourProperties.wheel_colour, carColourProperties.window_tint)})
-		carColours.addColor(carColourProperties, 'tyre_colour').onChange(val => {CarModelLoader.updateCarMaterial (carColourProperties.body_colour, carColourProperties.disk_colour, val, carColourProperties.wheel_colour, carColourProperties.window_tint)})
-		carColours.addColor(carColourProperties, 'wheel_colour').onChange(val => {CarModelLoader.updateCarMaterial (carColourProperties.body_colour, carColourProperties.disk_colour, carColourProperties.tyre_colour, val, carColourProperties.window_tint)})
-		carColours.addColor(carColourProperties, 'window_tint').onChange(val => {CarModelLoader.updateCarMaterial (carColourProperties.body_colour, carColourProperties.disk_colour, carColourProperties.tyre_colour, carColourProperties.wheel_colour, val)})
-		
-		// Car Physics folder
-		carPhysics = gui.addFolder('Car Physics')
-		carPhysics.add(carPhysicsProperties, 'move_speed', 0.5, 40, 0.5).onChange(_ => carControls.setVariable(carPhysicsProperties))
-		carPhysics.add(carPhysicsProperties, 'turn_speed', 0.00, 1, 0.05).onChange(_ => carControls.setVariable(carPhysicsProperties))
-
-		// World Property folder
-		worldPropertyGUI = gui.addFolder('World Properties')
-		worldPropertyGUI.add(worldProperties, 'gravity', 0.0, 20.0, 0.05).onChange(val => physicsWorld.gravity.set(0, -val, 0))
-		worldPropertyGUI.addColor(worldProperties, 'background_colour').onChange(val => scene.background = new THREE.Color(val))
-		worldPropertyGUI.addColor(worldProperties, 'fog_colour').onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
-		worldPropertyGUI.add(worldProperties, 'fog_near', 0, 1500, 1).onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
-		worldPropertyGUI.add(worldProperties, 'fog_far', 10, 2000, 1).onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
-
-		// Camera FOV
-		gui.add(cameraProperties, 'fov', 25, 100).onChange(val => {
-			camera.fov = val
+		//this fucntion is called when the window is resized
+		var MyResize = function () {
+			var width = window.innerWidth;
+			var height = window.innerHeight;
+			renderer.setSize(width, height);
+			camera.aspect = width / height;
 			camera.updateProjectionMatrix();
-		})
-		gui.open()	
-		guiBuilt = true
-	}
-	
-	
-    </script>
-  </body>
+			renderer.render(scene, camera);
+		};
+
+		//link the resize of the window to the update of the camera
+		window.addEventListener('resize', MyResize);
+
+		const onKeyDown = (event) => {
+			switch (event.keyCode) {
+				case 32:
+				//CarModelLoader.updateCarMaterial(0xFF0000, 0xFFFFFF, 0xFFFFFF, 0x000000, 0xFFFFFF)
+			}
+		}
+		window.addEventListener('keydown', onKeyDown, false)
+
+		var gui
+		var carColours
+		var carPhysics
+		var worldPropertyGUI
+		const buildGUI = () => {
+			gui = new dat.GUI()
+			// Colours folder
+			carColours = gui.addFolder('Colours')
+			carColours.addColor(carColourProperties, 'body_colour').onChange(val => { CarModelLoader.updateCarMaterial(val, carColourProperties.disk_colour, carColourProperties.tyre_colour, carColourProperties.wheel_colour, carColourProperties.window_tint) })
+			carColours.addColor(carColourProperties, 'disk_colour').onChange(val => { CarModelLoader.updateCarMaterial(carColourProperties.body_colour, val, carColourProperties.tyre_colour, carColourProperties.wheel_colour, carColourProperties.window_tint) })
+			carColours.addColor(carColourProperties, 'tyre_colour').onChange(val => { CarModelLoader.updateCarMaterial(carColourProperties.body_colour, carColourProperties.disk_colour, val, carColourProperties.wheel_colour, carColourProperties.window_tint) })
+			carColours.addColor(carColourProperties, 'wheel_colour').onChange(val => { CarModelLoader.updateCarMaterial(carColourProperties.body_colour, carColourProperties.disk_colour, carColourProperties.tyre_colour, val, carColourProperties.window_tint) })
+			carColours.addColor(carColourProperties, 'window_tint').onChange(val => { CarModelLoader.updateCarMaterial(carColourProperties.body_colour, carColourProperties.disk_colour, carColourProperties.tyre_colour, carColourProperties.wheel_colour, val) })
+
+			// Car Physics folder
+			carPhysics = gui.addFolder('Car Physics')
+			carPhysics.add(carPhysicsProperties, 'move_speed', 0.5, 100, 0.5).onChange(_ => carControls.setVariable(carPhysicsProperties))
+			carPhysics.add(carPhysicsProperties, 'turn_speed', 0.00, 1, 0.05).onChange(_ => carControls.setVariable(carPhysicsProperties))
+
+			// World Property folder
+			worldPropertyGUI = gui.addFolder('World Properties')
+			worldPropertyGUI.add(worldProperties, 'gravity', 0.0, 20.0, 0.05).onChange(val => physicsWorld.gravity.set(0, -val, 0))
+			worldPropertyGUI.addColor(worldProperties, 'background_colour').onChange(val => scene.background = new THREE.Color(val))
+			worldPropertyGUI.addColor(worldProperties, 'fog_colour').onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
+			worldPropertyGUI.add(worldProperties, 'fog_near', 0, 1500, 1).onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
+			worldPropertyGUI.add(worldProperties, 'fog_far', 10, 2000, 1).onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
+
+			// Camera FOV
+			gui.add(cameraProperties, 'fov', 25, 100).onChange(val => {
+				camera.fov = val
+				camera.updateProjectionMatrix();
+			})
+			gui.open()
+			guiBuilt = true
+		}
+
+
+	</script>
+</body>
+
 </html>
