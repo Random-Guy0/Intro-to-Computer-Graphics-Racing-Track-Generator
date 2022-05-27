@@ -7,6 +7,12 @@ import * as THREE from 'three'
 import * as CANNON from 'cannon-es'
 
 /**
+ * CONFIG
+ */
+const peakHeight = 60
+const terrainSmoothing = 300
+
+/**
  * Represents a chunk
  * @constructor
  * @param {number} xChunkCoordinate Position of the chunk in the x axis in the chunk coordinates
@@ -33,8 +39,8 @@ class Chunk {
         this.chunkSize = chunkSize
         this.split = split - 1
         this.noiseSeed = noiseSeed
-        this.height = 60
-        this.smoothing = 300
+        this.height = peakHeight
+        this.smoothing = terrainSmoothing
         this.heightMap2D = [[]]
 
         this.geometry = new THREE.PlaneGeometry(this.chunkSize, this.chunkSize, this.split, this.split)
@@ -44,7 +50,7 @@ class Chunk {
         this.generateHeightMap().then(
             () => {
                 this.chunkMesh = this.generateVisual()
-                this.chunkMesh.position.set(-xChunkCoordinate * chunkSize, 0, -yChunkCoordinate * chunkSize)
+                this.chunkMesh.position.set(xChunkCoordinate * chunkSize, 0, -yChunkCoordinate * chunkSize)
                 targetScene.add(this.chunkMesh)
             }
         )
@@ -122,7 +128,7 @@ class Chunk {
         heightfieldBody.addShape(heightFieldShape)
 
         heightfieldBody.position.set(
-          (-(this.split) * heightFieldShape.elementSize) / 2 -this.xChunkCoordinate * this.chunkSize,
+          (-(this.split) * heightFieldShape.elementSize) / 2 +this.xChunkCoordinate * this.chunkSize,
           0,
           (-(this.split) * heightFieldShape.elementSize) / 2 -this.yChunkCoordinate * this.chunkSize
         )
