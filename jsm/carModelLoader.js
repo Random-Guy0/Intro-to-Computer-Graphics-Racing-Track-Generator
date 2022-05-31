@@ -75,7 +75,7 @@ function addCarToScene (carSize, targetScene, bodyColor = DEF_BODY_COL, diskColo
             var combined = new THREE.Matrix4()
         
             sca.makeScale(carSize/size.length(),carSize/size.length(),carSize/size.length())
-            tra.makeTranslation (-center.x,-min.y,-center.z)
+            tra.makeTranslation (-center.x,-min.y + 50,-center.z)
             
             combined.multiply(sca)
             combined.multiply(tra)

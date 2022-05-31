@@ -1,11 +1,29 @@
+import Chunk from "./Chunk.js"
+import * as THREE from 'three'
+import * as CANNON from 'cannon-es'
+
+/**
+ * Chunk system
+ * @param {number} chunk_size size of chunk
+ * @param {number} chunk_div Number of division for chunk plane (resolution of chunk)
+ * @param {number} distance viewing distance of tracking target
+ * @param {Object3D} track Target to be tracked
+ * @param {Scene} targetScene Scene for the chunk to be added
+ * @param {Physics world} targetPhysics Target physics world
+ * @param {number} seed Random seed for world generation
+ */
 class ChunkSystem {
-    constructor(chunk_size, distance, track) {
+    constructor(chunk_size, chunk_div, distance, track, targetScene, targetPhysics, seed) {
         this.chunk_size = chunk_size
+        this.chunk_div = chunk_div
         this.distance = distance
         this.chunk_offset_x = 0.5
         this.chunk_offset_z = 0.5
+        this.targetScene = targetScene
+        this.targetPhysics = targetPhysics
+        this.seed = seed
 
-        this.loaded_chunks = []
+        this.loaded_chunks = new Map()
 
         /* this.geometry = new THREE.BoxGeometry(chunk_size, 1, chunk_size)
         this.material = new THREE.MeshBasicMaterial({
@@ -13,10 +31,10 @@ class ChunkSystem {
         }) */
 
         this.chunk_coord_pos = this.getTargetChunkCoord(track)
-        this.init(track)
+        this.init()
     }
 
-    init(track) {
+    init() {
         for(var i = (this.chunk_coord_pos.z - this.distance); i <= this.chunk_coord_pos.z + this.distance; i++) {
             for(var j = (this.chunk_coord_pos.x - this.distance); j <= this.chunk_coord_pos.x + this.distance; j++) {
                 this.createChunk(j, i)
@@ -41,13 +59,15 @@ class ChunkSystem {
             return
         }
         if(current.z != this.chunk_coord_pos.z) {
+            console.log(current)
             let dist_multiplier = 0
             if(current.z < this.chunk_coord_pos.z) dist_multiplier = -1
             else dist_multiplier = 1
+            console.log(current.z - (this.distance - 1) * dist_multiplier)
             for(var i = (this.chunk_coord_pos.x - this.distance); i <= this.chunk_coord_pos.x + this.distance; i++) {
                 this.removeChunk(i, (current.z - (this.distance + 1) * dist_multiplier))
                 this.removeChunk(i, (current.z - (this.distance + 2) * dist_multiplier))
-                this.createChunk(i, (current.z + this.distance * dist_multiplier))
+                this.createChunk(i, -(current.z + this.distance * dist_multiplier))
             }
 
             this.chunk_coord_pos.z = current.z
@@ -58,21 +78,26 @@ class ChunkSystem {
     createChunk(x, z) {
         let x_n = x + this.chunk_offset_x
         let z_n = z + this.chunk_offset_z
-        let mesh = new THREE.Mesh(this.geometry, this.material)
-        mesh.name = x_n+":"+z_n
-        mesh.position.x = x_n * this.chunk_size
-        mesh.position.z = z_n * this.chunk_size
+        var chunk = new Chunk(x_n, z_n, this.chunk_size, this.chunk_div, this.seed, this.targetScene, this.targetPhysics)
+        this.loaded_chunks.set(chunk.getKey(), chunk)
         /* scene.add(mesh) */
     }
 
     removeChunk(x, z) {
         let x_n = x + this.chunk_offset_x
         let z_n = z + this.chunk_offset_z
-        scene.remove(scene.getObjectByName(x_n+":"+z_n))    
+        let id = x_n+":"+z_n
+        let targetChunk = this.loaded_chunks.get(id)
+        if(targetChunk != null) targetChunk.delete()
+        this.loaded_chunks.delete(id)
     }
 
     getTargetChunkCoord(track) {
-        return new THREE.Vector3(Math.floor(track.mesh.position.x / this.chunk_size), 0, Math.floor(track.mesh.position.z / this.chunk_size))
+        let ret = new THREE.Vector3(Math.floor(track.car.position.x / this.chunk_size), 0, Math.floor(track.car.position.z / this.chunk_size))
+        
+        return ret
     }
     
 }
+
+export default ChunkSystem

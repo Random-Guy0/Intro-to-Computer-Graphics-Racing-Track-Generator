@@ -66,6 +66,7 @@
 
 		import CarControls from './jsm/CarControls.js';
 		import Chunk from './jsm/Chunk.js'
+		import ChunkSystem from './jsm/ChunkSystem.js'
 
 		import * as CarModelLoader from './jsm/carModelLoader.js'
 
@@ -76,7 +77,7 @@
 		physicsWorld.broadphase = new CANNON.NaiveBroadphase();
 		physicsWorld.solver.iterations = 10;
 
-		
+
 
 		//create the scene
 		var scene = new THREE.Scene();
@@ -108,7 +109,7 @@
 		// Debug
 		const cannonDebugger = new CannonDebugger(scene, physicsWorld, {
 			color: 0xFF0000,
-		})	
+		})
 
 		//then add lighting
 		var cameralight = new THREE.PointLight(new THREE.Color(1, 1, 1), 1);
@@ -210,9 +211,12 @@
 
 		const seed = Math.random()
 		// TEST CODE
-		var chunk = new Chunk(0, 0, 100, 128, seed, scene, physicsWorld)
+		/* var chunk = new Chunk(0, 0, 100, 128, seed, scene, physicsWorld)
 		var chunk = new Chunk(0, 1, 100, 128, seed, scene, physicsWorld)
-		var chunk = new Chunk(1, 1, 100, 128, seed, scene, physicsWorld)
+		var chunk = new Chunk(1, 1, 100, 128, seed, scene, physicsWorld) */
+		var chunkSystem
+		var chunkSystemFlag = false
+
 		//final update loop
 		var MyUpdateLoop = function () {
 			var deltaTime = clock.getDelta();
@@ -230,7 +234,12 @@
 				car.castShadow = true;
 			}
 			else if (carControls != null) {
+				if (!chunkSystemFlag) {
+					chunkSystemFlag = true
+					chunkSystem = new ChunkSystem(10, 2, 5, carControls, scene, physicsWorld, seed)
+				}
 				carControls.move(deltaTime);
+				chunkSystem.updateChunk(carControls)
 			}
 
 			updatePhysics(deltaTime);
