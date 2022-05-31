@@ -143,11 +143,6 @@ class CarControls
         this.body = carBody
 
         carBody.addToWorld(this.physicsWorld);
-
-        var shape = new this.CANNON.Box(new this.CANNON.Vec3(100, 1, 100));
-        var body = new this.CANNON.Body({ mass: 0 });
-        body.addShape(shape);
-        this.physicsWorld.addBody(body);
         
         return carBody;
     }
