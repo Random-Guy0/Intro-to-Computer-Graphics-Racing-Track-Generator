@@ -59,6 +59,7 @@
 		import * as THREE from 'three';
 		import * as CANNON from 'cannon-es'
 		import CannonDebugger from 'cannon-debug'
+		import Player from './jsm/testCar.js'
 		import { OrbitControls } from './jsm/controls/OrbitControls.js';
 
 		import { MTLLoader } from './jsm/loaders/MTLLoader.js';
@@ -108,9 +109,9 @@
 		var controls = new OrbitControls(camera, renderer.domElement);
 
 		// Debug
-		const cannonDebugger = new CannonDebugger(scene, physicsWorld, {
-			color: 0xFF0000,
-		})
+		/* const cannonDebugger = new CannonDebugger(scene, physicsWorld, {
+			color: 0x000000,
+		}) */
 
 		//then add lighting
 		var cameralight = new THREE.PointLight(new THREE.Color(1, 1, 1), 1);
@@ -219,6 +220,7 @@
 		var chunkSystemFlag = false
 		var car;
 		var carBody;
+		var player = new Player(scene)
 		//final update loop
 		var MyUpdateLoop = function () {
 			var deltaTime = clock.getDelta();
@@ -238,14 +240,20 @@
 			else if (carControls != null) {
 				if (!chunkSystemFlag) {
 					chunkSystemFlag = true
-					chunkSystem = new ChunkSystem(10, 2, 5, carControls, scene, physicsWorld, seed)
+					chunkSystem = new ChunkSystem(100, 16, 2, carControls, scene, physicsWorld, seed)
 				}
 				chunkSystem.updateChunk(carControls)
 				carControls.move();
 			}
+			/* player.move()
+			if (!chunkSystemFlag) {
+				chunkSystemFlag = true
+				chunkSystem = new ChunkSystem(50, 16, 2, player, scene, physicsWorld, seed)
+			}
+			chunkSystem.updateChunk(player) */
 
 			updatePhysics(deltaTime);
-			cannonDebugger.update()
+			//cannonDebugger.update()
 
 			updateCamera();
 
@@ -273,8 +281,7 @@
 				meshes[i].quaternion.copy(bodies[i].quaternion);
 			}
 
-			if(car != null)
-			{
+			if (car != null) {
 				car.position.copy(carBody.chassisBody.position);
 				car.quaternion.copy(carBody.chassisBody.quaternion);
 			}

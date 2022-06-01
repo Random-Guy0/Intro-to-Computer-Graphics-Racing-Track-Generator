@@ -47,7 +47,7 @@ class Chunk {
 
         this.geometry = new THREE.PlaneGeometry(this.chunkSize, this.chunkSize, this.split, this.split)
         this.material = new THREE.MeshLambertMaterial({ color: 0x00FF00 })
-        this.material.wireframe = true
+        this.material.wireframe = false
 
         this.generateHeightMap().then(
             () => {
