@@ -73,9 +73,10 @@
 		var clock = new THREE.Clock();
 
 		var physicsWorld = new CANNON.World();
-		physicsWorld.gravity.set(0, -9.8, 0);
-		physicsWorld.broadphase = new CANNON.NaiveBroadphase();
+		physicsWorld.gravity.set(0, -30, 0);
+		physicsWorld.broadphase = new CANNON.SAPBroadphase(physicsWorld);
 		physicsWorld.solver.iterations = 10;
+		//physicsWorld.allowSleep = true;
 
 
 
@@ -129,7 +130,7 @@
 		}
 
 		var carPhysicsProperties = {
-			move_speed: 20.0,
+			move_speed: 10.0,
 			turn_speed: 0.8
 		}
 
@@ -216,21 +217,22 @@
 		var chunk = new Chunk(1, 1, 100, 128, seed, scene, physicsWorld) */
 		var chunkSystem
 		var chunkSystemFlag = false
-
+		var car;
+		var carBody;
 		//final update loop
 		var MyUpdateLoop = function () {
 			var deltaTime = clock.getDelta();
 
 			if (carControls == null && scene.getObjectByName("Car") != null) {
-				var car = scene.getObjectByName("Car");
+				car = scene.getObjectByName("Car");
 				car.position.y += 5;
 				car.rotateY(-Math.PI / 2);
 				car.attach(camera);
 				carControls = new CarControls(car, camera, carPhysicsProperties.move_speed, carPhysicsProperties.turn_speed, THREE, CANNON, physicsWorld, groundMat);
-				var body = carControls.createRigidBody();
-				meshes.push(car);
-				physicsWorld.addBody(body);
-				bodies.push(body);
+				carBody = carControls.createRigidBody();
+				//meshes.push(car);
+				//physicsWorld.addBody(body);
+				//bodies.push(body);
 				car.castShadow = true;
 			}
 			else if (carControls != null) {
@@ -238,8 +240,8 @@
 					chunkSystemFlag = true
 					chunkSystem = new ChunkSystem(10, 2, 5, carControls, scene, physicsWorld, seed)
 				}
-				carControls.move(deltaTime);
 				chunkSystem.updateChunk(carControls)
+				carControls.move();
 			}
 
 			updatePhysics(deltaTime);
@@ -269,6 +271,12 @@
 			for (var i = 0; i < meshes.length; i++) {
 				meshes[i].position.copy(bodies[i].position);
 				meshes[i].quaternion.copy(bodies[i].quaternion);
+			}
+
+			if(car != null)
+			{
+				car.position.copy(carBody.chassisBody.position);
+				car.quaternion.copy(carBody.chassisBody.quaternion);
 			}
 		}
 
