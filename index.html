@@ -226,7 +226,7 @@
 				car = scene.getObjectByName("Car");
 				car.position.y += 5;
 				car.rotateY(-Math.PI / 2);
-				//car.attach(camera);
+				car.attach(camera);
 				carControls = new CarControls(car, camera, carPhysicsProperties.move_speed, carPhysicsProperties.turn_speed, THREE, CANNON, physicsWorld, groundMat);
 				carBody = carControls.createRigidBody();
 				//meshes.push(car);
@@ -280,7 +280,7 @@
 
 		function updateCamera() {
 			if (car != null) {
-				//camera.lookAt(car.position);
+				camera.lookAt(car.position);
 			}
 		}
 
