@@ -59,6 +59,7 @@
 		import * as THREE from 'three';
 		import * as CANNON from 'cannon-es'
 		import CannonDebugger from 'cannon-debug'
+		import Player from './jsm/testCar.js'
 		import { OrbitControls } from './jsm/controls/OrbitControls.js';
 
 		import { MTLLoader } from './jsm/loaders/MTLLoader.js';
@@ -66,6 +67,7 @@
 
 		import CarControls from './jsm/CarControls.js';
 		import Chunk from './jsm/Chunk.js'
+		import ChunkSystem from './jsm/ChunkSystem.js'
 
 		import * as CarModelLoader from './jsm/carModelLoader.js'
 
@@ -77,7 +79,7 @@
 		physicsWorld.solver.iterations = 10;
 		//physicsWorld.allowSleep = true;
 
-		
+
 
 		//create the scene
 		var scene = new THREE.Scene();
@@ -107,9 +109,9 @@
 		var controls = new OrbitControls(camera, renderer.domElement);
 
 		// Debug
-		const cannonDebugger = new CannonDebugger(scene, physicsWorld, {
-			color: 0xFF0000,
-		})	
+		/* const cannonDebugger = new CannonDebugger(scene, physicsWorld, {
+			color: 0x000000,
+		}) */
 
 		//then add lighting
 		var cameralight = new THREE.PointLight(new THREE.Color(1, 1, 1), 1);
@@ -135,11 +137,12 @@
 
 		var worldProperties = {
 			gravity: 9.8,	// Multiplied by -1
-			background_colour: 0x000000,
-			fog_colour: 0x000000,
+			background_colour: 0x87CEEB,
+			fog_colour: 0x87CEEB,
 			fog_near: 1,
-			fog_far: 2000
+			fog_far: 700
 		}
+		scene.background = new THREE.Color(worldProperties.background_colour)
 		scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far)
 
 		var cameraProperties = {
@@ -211,11 +214,11 @@
 
 		const seed = Math.random()
 		// TEST CODE
-		var chunk = new Chunk(0, 0, 100, 128, seed, scene, physicsWorld)
+		/* var chunk = new Chunk(0, 0, 100, 128, seed, scene, physicsWorld)
 		var chunk = new Chunk(0, 1, 100, 128, seed, scene, physicsWorld)
-		var chunk = new Chunk(1, 1, 100, 128, seed, scene, physicsWorld)
-
-
+		var chunk = new Chunk(1, 1, 100, 128, seed, scene, physicsWorld) */
+		var chunkSystem
+		var chunkSystemFlag = false
 		var car;
 		var carBody;
 		//final update loop
@@ -239,11 +242,22 @@
 				}
 			}
 			else if (carControls != null) {
+				if (!chunkSystemFlag) {
+					chunkSystemFlag = true
+					chunkSystem = new ChunkSystem(256, 32, 3, carControls, scene, physicsWorld, seed)
+				}
+				chunkSystem.updateChunk(carControls)
 				carControls.move();
 			}
+			/* player.move()
+			if (!chunkSystemFlag) {
+				chunkSystemFlag = true
+				chunkSystem = new ChunkSystem(50, 16, 2, player, scene, physicsWorld, seed)
+			}
+			chunkSystem.updateChunk(player) */
 
 			updatePhysics(deltaTime);
-			cannonDebugger.update()
+			//cannonDebugger.update()
 
 			updateCamera();
 
@@ -271,8 +285,7 @@
 				meshes[i].quaternion.copy(bodies[i].quaternion);
 			}
 
-			if(car != null)
-			{
+			if (car != null) {
 				car.position.copy(carBody.chassisBody.position);
 				car.quaternion.copy(carBody.chassisBody.quaternion);				
 			}
