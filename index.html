@@ -109,9 +109,9 @@
 		var controls = new OrbitControls(camera, renderer.domElement);
 
 		// Debug
-		/*const cannonDebugger = new CannonDebugger(scene, physicsWorld, {
+		const cannonDebugger = new CannonDebugger(scene, physicsWorld, {
 			color: 0x000000,
-		}) */
+		}) 
 
 		//then add lighting
 		var cameralight = new THREE.PointLight(new THREE.Color(1, 1, 1), 1);
@@ -221,6 +221,7 @@
 		var chunkSystemFlag = false
 		var car;
 		var carBody;
+		var delta = new THREE.Vector3();
 		//final update loop
 		var MyUpdateLoop = function () {
 			var deltaTime = clock.getDelta();
@@ -240,7 +241,7 @@
 			else if (carControls != null) {
 				if (!chunkSystemFlag) {
 					chunkSystemFlag = true
-					chunkSystem = new ChunkSystem(256, 32, 3, carControls, scene, physicsWorld, seed)
+					chunkSystem = new ChunkSystem(256, 257, 2, carControls, scene, physicsWorld, seed)
 				}
 				chunkSystem.updateChunk(carControls)
 				carControls.move();
@@ -261,6 +262,8 @@
 			renderer.render(scene, camera);
 
 			controls.update();
+
+			
 
 			if (!guiBuilt) {
 				if (CarModelLoader.matLoaded) {
@@ -295,6 +298,8 @@
 
 		var resetCarPos = { reset_car: function()
 		{
+			carBody.chassisBody.angularVelocity = new CANNON.Vec3(0, 0, 0);
+			carBody.chassisBody.linearVelocity = new CANNON.Vec3(0, 0, 0);
 			carBody.chassisBody.quaternion.copy(new CANNON.Quaternion());
 			carBody.chassisBody.position.y += 5;
 		}};
@@ -316,8 +321,11 @@
 
 		const onKeyDown = (event) => {
 			switch (event.keyCode) {
-				case 32:
+				//case 32:
 				//CarModelLoader.updateCarMaterial(0xFF0000, 0xFFFFFF, 0xFFFFFF, 0x000000, 0xFFFFFF)
+				case 82:
+					resetCarPos.reset_car();
+					break;
 			}
 		}
 		window.addEventListener('keydown', onKeyDown, false)

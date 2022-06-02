@@ -82,7 +82,7 @@ class CarControls
     {
         var down = new this.CANNON.Vec3(0, -1, 0);
 
-        var carShape = new this.CANNON.Box(new this.CANNON.Vec3(3 * this.car.scale.x, 0.7 * this.car.scale.y, 1.25 * this.car.scale.z));
+        var carShape = new this.CANNON.Box(new this.CANNON.Vec3(2.75 * this.car.scale.x, 0.6 * this.car.scale.y, 1.25 * this.car.scale.z));
         var mat = new this.CANNON.Material('wheel');
         var carMainBody = new this.CANNON.Body({ mass : 1});
         carMainBody.addShape(carShape, new this.CANNON.Vec3(0, 0.1, 0));

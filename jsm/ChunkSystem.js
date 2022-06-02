@@ -45,8 +45,8 @@ class ChunkSystem {
     //CHUNK NAMING SCHEME: "CHUNK:"+current.x+":"+z
     updateChunk(track) {
         let current = this.getTargetChunkCoord(track)
-        console.log(current)
-        console.log(this.chunk_coord_pos)
+        //console.log(current)
+        //console.log(this.chunk_coord_pos)
         if(current.x != this.chunk_coord_pos.x) {
             let dist_multiplier = 0
             if(current.x < this.chunk_coord_pos.x) dist_multiplier = -1
@@ -65,7 +65,7 @@ class ChunkSystem {
             let dist_multiplier = 0
             if(current.z < this.chunk_coord_pos.z) dist_multiplier = -1
             else dist_multiplier = 1
-            console.log(current.z - (this.distance - 1) * dist_multiplier)
+            //console.log(current.z - (this.distance - 1) * dist_multiplier)
             for(var i = (this.chunk_coord_pos.x - this.distance); i <= this.chunk_coord_pos.x + this.distance; i++) {
                 this.removeChunk(i, (current.z - (this.distance + 1) * dist_multiplier))
                 this.removeChunk(i, (current.z - (this.distance + 2) * dist_multiplier))

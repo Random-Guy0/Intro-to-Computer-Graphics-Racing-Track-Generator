@@ -138,25 +138,74 @@ class Chunk {
             pos.fromBufferAttribute(vPosition, i);
             var posY = mesh.localToWorld(pos).z;
             //console.log(posY);
-            if(posY < -15)
+            if(posY >= -24 && posY <= -14)
             {
-                vColors.setXYZ(i, darkGrassColor.r, darkGrassColor.g, darkGrassColor.b);
+                var l = (posY + 24) / 10;
+                var color = new THREE.Color();
+                color.lerpColors(darkGrassColor, grassColor, l);
+
+                vColors.setXYZ(i, color.r, color.g, color.b);
+            }
+            else if(posY < -15)
+            {
+                var color = darkGrassColor;
+
+                /*if(posY >= -15.2)
+                {
+                    var l = (posY + 15.2) * 5;
+                    color.lerpColors(darkGrassColor, grassColor, 0.5);
+                }*/
+
+                vColors.setXYZ(i, color.r, color.g, color.b);
+            }
+            else if(posY >= -2 && posY <= 2)
+            {
+                var color = new THREE.Color();
+                var l = (posY + 2) / 4;
+                color.lerpColors(grassColor, sandColor, l);
+
+                vColors.setXYZ(i, color.r, color.g, color.b);
             }
             else if(posY < 1)
             {
-                vColors.setXYZ(i, grassColor.r, grassColor.g, grassColor.b);
+                //var l = (posY - 1) / 9;
+                var color = grassColor;
+                //color.lerpColors(grassColor, sandColor, l);
+                vColors.setXYZ(i, color.r, color.g, color.b);   
             }
-            else if(posY > 25)
+            else if(posY >= 9 && posY <= 13)
             {
-                vColors.setXYZ(i, snowColor.r, snowColor.g, snowColor.b);
+                var color = new THREE.Color();
+                var l = (posY - 9) / 4;
+                color.lerpColors(sandColor, rockColor, l);
+
+                vColors.setXYZ(i, color.r, color.g, color.b);
             }
             else if(posY < 10)
             {
-                vColors.setXYZ(i, sandColor.r, sandColor.g, sandColor.b);
+                var color = sandColor;
+
+                vColors.setXYZ(i, color.r, color.g, color.b);
+            }
+            else if(posY >= 24 && posY <= 28)
+            {
+                var color = new THREE.Color();
+                var l = (posY - 24) / 4;
+                color.lerpColors(rockColor, snowColor, l);
+
+                vColors.setXYZ(i, color.r, color.g, color.b);
             }
             else if(posY < 25)
             {
-                vColors.setXYZ(i, rockColor.r, rockColor.g, rockColor.b);
+                var color = rockColor;
+
+                vColors.setXYZ(i, color.r, color.g, color.b);
+            }
+            else if(posY > 25)
+            {
+                var color = snowColor;
+
+                vColors.setXYZ(i, color.r, color.g, color.b);
             }
         }
     }
