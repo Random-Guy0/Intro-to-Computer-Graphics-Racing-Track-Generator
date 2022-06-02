@@ -137,11 +137,12 @@
 
 		var worldProperties = {
 			gravity: 9.8,	// Multiplied by -1
-			background_colour: 0x000000,
-			fog_colour: 0x000000,
+			background_colour: 0x87CEEB,
+			fog_colour: 0x87CEEB,
 			fog_near: 1,
-			fog_far: 2000
+			fog_far: 700
 		}
+		scene.background = new THREE.Color(worldProperties.background_colour)
 		scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far)
 
 		var cameraProperties = {
@@ -244,7 +245,7 @@
 			else if (carControls != null) {
 				if (!chunkSystemFlag) {
 					chunkSystemFlag = true
-					chunkSystem = new ChunkSystem(100, 16, 2, carControls, scene, physicsWorld, seed)
+					chunkSystem = new ChunkSystem(256, 32, 3, carControls, scene, physicsWorld, seed)
 				}
 				chunkSystem.updateChunk(carControls)
 				carControls.move();
