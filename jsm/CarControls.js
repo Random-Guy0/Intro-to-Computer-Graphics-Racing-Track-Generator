@@ -151,7 +151,7 @@ class CarControls
             directionLocal: new this.CANNON.Vec3(0, -1, 0),
             suspensionStiffness: 45,
             suspensionRestLength: 0.4,
-            frictionSlip: 0.5,
+            frictionSlip: 1.4,
             dampingRelaxation: 2.3,
             dampingCompression: 4.5,
             maxSuspensionForce: 200000,
@@ -206,7 +206,7 @@ class CarControls
 
         var mat_ground = new this.CANNON.ContactMaterial(this.groundMat, mat, {friction: 0.3, restitution: 0.0, ContactEquationStiffness: 1000});
         //this.physicsWorld.addContactMaterial(mat_ground);
-        this.physicsWorld.addContactMaterial(mat_ground);
+        this.physicsWorld.defaultContactMaterial = mat_ground;
 
         this.body = carBody
 

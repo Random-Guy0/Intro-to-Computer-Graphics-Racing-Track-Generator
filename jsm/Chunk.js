@@ -46,7 +46,8 @@ class Chunk {
         this.physicsWorld = physicsWorld
 
         this.geometry = new THREE.PlaneGeometry(this.chunkSize, this.chunkSize, this.split, this.split)
-        this.material = new THREE.MeshLambertMaterial({ color: 0x00FF00 })
+        this.material = new THREE.MeshLambertMaterial()
+        this.material.vertexColors = true;
         this.material.wireframe = false
 
         this.generateHeightMap().then(
@@ -107,8 +108,57 @@ class Chunk {
         mesh.geometry.computeVertexNormals()
         mesh.name = this.getKey()
         
+        this.generateColor(mesh);
 
         return mesh
+    }
+
+    generateColor(mesh)
+    {
+        var geometry = mesh.geometry;
+        var count = geometry.attributes.position.count;
+        geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
+        
+        var grassColor = new THREE.Color(0x63f542);
+
+        var snowColor = new THREE.Color(0xf5fcfc);
+
+        var rockColor = new THREE.Color(0x8f6f10);
+
+        var sandColor = new THREE.Color(0xdbc81a);
+
+        var darkGrassColor = new THREE.Color(0x47bf2c);
+
+        var vPosition = geometry.getAttribute('position');
+        var vColors = geometry.attributes.color;
+
+        for(var i = 0; i < count; i++)
+        {
+            var pos = new THREE.Vector3();
+            pos.fromBufferAttribute(vPosition, i);
+            var posY = mesh.localToWorld(pos).z;
+            //console.log(posY);
+            if(posY < -15)
+            {
+                vColors.setXYZ(i, darkGrassColor.r, darkGrassColor.g, darkGrassColor.b);
+            }
+            else if(posY < 1)
+            {
+                vColors.setXYZ(i, grassColor.r, grassColor.g, grassColor.b);
+            }
+            else if(posY > 25)
+            {
+                vColors.setXYZ(i, snowColor.r, snowColor.g, snowColor.b);
+            }
+            else if(posY < 10)
+            {
+                vColors.setXYZ(i, sandColor.r, sandColor.g, sandColor.b);
+            }
+            else if(posY < 25)
+            {
+                vColors.setXYZ(i, rockColor.r, rockColor.g, rockColor.b);
+            }
+        }
     }
 
     /**

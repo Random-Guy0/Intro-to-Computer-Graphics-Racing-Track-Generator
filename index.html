@@ -109,7 +109,7 @@
 		var controls = new OrbitControls(camera, renderer.domElement);
 
 		// Debug
-		/* const cannonDebugger = new CannonDebugger(scene, physicsWorld, {
+		/*const cannonDebugger = new CannonDebugger(scene, physicsWorld, {
 			color: 0x000000,
 		}) */
 
@@ -131,7 +131,7 @@
 		}
 
 		var carPhysicsProperties = {
-			move_speed: 3.0,
+			move_speed: 2.5,
 			turn_speed: 1.0
 		}
 
@@ -227,19 +227,15 @@
 
 			if (carControls == null && scene.getObjectByName("Car") != null) {
 				car = scene.getObjectByName("Car");
-				car.position.y += 5;
-				car.rotateY(-Math.PI / 2);
-				car.attach(camera);
+				//car.position.y += 5;
+				//car.rotateY(-Math.PI / 2);
+				car.add(camera);
 				carControls = new CarControls(car, camera, carPhysicsProperties.move_speed, carPhysicsProperties.turn_speed, THREE, CANNON, physicsWorld, groundMat);
 				carBody = carControls.createRigidBody();
 				//meshes.push(car);
 				//physicsWorld.addBody(body);
 				//bodies.push(body);
 				car.castShadow = true;
-				for(var i = 0; i < car.children.length; i++)
-				{
-					console.log(car.children[i].name);
-				}
 			}
 			else if (carControls != null) {
 				if (!chunkSystemFlag) {
@@ -299,9 +295,8 @@
 
 		var resetCarPos = { reset_car: function()
 		{
-			var newPos = new CANNON.Vec3();
-			newPos.y += 5;
-			carBody.chassisBody.position.copy(newPos);
+			carBody.chassisBody.quaternion.copy(new CANNON.Quaternion());
+			carBody.chassisBody.position.y += 5;
 		}};
 
 		requestAnimationFrame(MyUpdateLoop);
