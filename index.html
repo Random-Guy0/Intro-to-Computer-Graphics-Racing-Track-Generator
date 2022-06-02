@@ -226,7 +226,7 @@
 				car = scene.getObjectByName("Car");
 				car.position.y += 5;
 				car.rotateY(-Math.PI / 2);
-				car.attach(camera);
+				//car.attach(camera);
 				carControls = new CarControls(car, camera, carPhysicsProperties.move_speed, carPhysicsProperties.turn_speed, THREE, CANNON, physicsWorld, groundMat);
 				carBody = carControls.createRigidBody();
 				//meshes.push(car);
@@ -279,11 +279,17 @@
 		}
 
 		function updateCamera() {
-			var car = scene.getObjectByName("Car");
 			if (car != null) {
-				camera.lookAt(car.position);
+				//camera.lookAt(car.position);
 			}
 		}
+
+		var resetCarPos = { reset_car: function()
+		{
+			var newPos = new CANNON.Vec3();
+			newPos.y += 5;
+			carBody.chassisBody.position.copy(newPos);
+		}};
 
 		requestAnimationFrame(MyUpdateLoop);
 
@@ -340,6 +346,9 @@
 				camera.fov = val
 				camera.updateProjectionMatrix();
 			})
+
+			gui.add(resetCarPos, 'reset_car');
+
 			gui.open()
 			guiBuilt = true
 		}

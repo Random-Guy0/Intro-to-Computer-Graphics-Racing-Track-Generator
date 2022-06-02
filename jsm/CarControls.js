@@ -151,7 +151,7 @@ class CarControls
             directionLocal: new this.CANNON.Vec3(0, -1, 0),
             suspensionStiffness: 45,
             suspensionRestLength: 0.4,
-            frictionSlip: 1.4,
+            frictionSlip: 0.5,
             dampingRelaxation: 2.3,
             dampingCompression: 4.5,
             maxSuspensionForce: 200000,
