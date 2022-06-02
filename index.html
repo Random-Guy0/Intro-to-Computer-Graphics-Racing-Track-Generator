@@ -74,7 +74,7 @@
 		var clock = new THREE.Clock();
 
 		var physicsWorld = new CANNON.World();
-		physicsWorld.gravity.set(0, -30, 0);
+		physicsWorld.gravity.set(0, -9.8, 0);
 		physicsWorld.broadphase = new CANNON.SAPBroadphase(physicsWorld);
 		physicsWorld.solver.iterations = 10;
 		//physicsWorld.allowSleep = true;
@@ -131,8 +131,8 @@
 		}
 
 		var carPhysicsProperties = {
-			move_speed: 10.0,
-			turn_speed: 0.8
+			move_speed: 3.0,
+			turn_speed: 1.0
 		}
 
 		var worldProperties = {
@@ -236,6 +236,10 @@
 				//physicsWorld.addBody(body);
 				//bodies.push(body);
 				car.castShadow = true;
+				for(var i = 0; i < car.children.length; i++)
+				{
+					console.log(car.children[i].name);
+				}
 			}
 			else if (carControls != null) {
 				if (!chunkSystemFlag) {
@@ -283,7 +287,7 @@
 
 			if (car != null) {
 				car.position.copy(carBody.chassisBody.position);
-				car.quaternion.copy(carBody.chassisBody.quaternion);
+				car.quaternion.copy(carBody.chassisBody.quaternion);				
 			}
 		}
 
@@ -333,8 +337,8 @@
 
 			// Car Physics folder
 			carPhysics = gui.addFolder('Car Physics')
-			carPhysics.add(carPhysicsProperties, 'move_speed', 0.5, 100, 0.5).onChange(_ => carControls.setVariable(carPhysicsProperties))
-			carPhysics.add(carPhysicsProperties, 'turn_speed', 0.00, 1, 0.05).onChange(_ => carControls.setVariable(carPhysicsProperties))
+			carPhysics.add(carPhysicsProperties, 'move_speed', 0.5, 7.5, 0.5).onChange(_ => carControls.setVariable(carPhysicsProperties))
+			carPhysics.add(carPhysicsProperties, 'turn_speed', 0.05, 1, 0.05).onChange(_ => carControls.setVariable(carPhysicsProperties))
 
 			// World Property folder
 			worldPropertyGUI = gui.addFolder('World Properties')
