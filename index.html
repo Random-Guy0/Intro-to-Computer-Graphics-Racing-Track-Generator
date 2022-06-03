@@ -371,6 +371,7 @@
 		const handbrakeActiveColour = 'red'
 		const handbrakeInactiveColour = '#69ff69'
 		const infoEl = document.getElementById("info")
+		const controlsHTML = `<p>Controls: WASD to move/steer the car, spacebar to toggle handbrake, R to reset car position</p>`
 		const updateHud = () => {
 			let speed = carControls.getSpeed()
 			let handbrakeStatus = carControls.getBrakeStatus()
@@ -386,7 +387,7 @@
 				handbrakeText = "Handbrake Inactive"
 			}
 			let handbrakeHTML = "<p style=\"color:" + handbrakeColour + ";\">" + handbrakeText + "</p>"
-			infoEl.innerHTML = speedHTML +"\n"+ handbrakeHTML
+			infoEl.innerHTML = controlsHTML + "\n" + speedHTML +"\n"+ handbrakeHTML
 		}
 
 
