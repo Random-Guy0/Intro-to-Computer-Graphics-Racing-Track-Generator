@@ -159,8 +159,8 @@ class CarControls
             axleLocal: new this.CANNON.Vec3(0, 0, 1),
             chassisConnectionPointLocal: new this.CANNON.Vec3(-1, 0, 1),
             maxSuspensionTravel: 0.25,
-            customSlidingRotationalSpeed: -30,
-            useCustomSlidingRotationalSpeed: true,
+            //customSlidingRotationalSpeed: -30,
+            //useCustomSlidingRotationalSpeed: true,
         };
 
         //front left wheel
@@ -209,6 +209,7 @@ class CarControls
         this.physicsWorld.defaultContactMaterial = mat_ground;
 
         this.body = carBody
+        this.wheelBodies = wheelBodies;
 
         carBody.addToWorld(this.physicsWorld);
         

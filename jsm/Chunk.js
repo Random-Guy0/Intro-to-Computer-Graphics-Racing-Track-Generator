@@ -9,8 +9,8 @@ import * as CANNON from 'cannon-es'
 /**
  * CONFIG
  */
-const peakHeight = 60
-const terrainSmoothing = 300
+//const peakHeight = 60
+//const terrainSmoothing = 300
 
 /**
  * Represents a chunk
@@ -33,7 +33,11 @@ class Chunk {
 
     noiseSeed   // Seed for perlin noise
 
-    constructor(xChunkCoordinate, yChunkCoordinate, chunkSize, split, noiseSeed, targetScene, physicsWorld) {
+    peakHeight
+
+    terrainSmoothing
+
+    constructor(xChunkCoordinate, yChunkCoordinate, chunkSize, split, noiseSeed, targetScene, physicsWorld, peakHeight, terrainSmoothing) {
         this.xChunkCoordinate = xChunkCoordinate
         this.yChunkCoordinate = yChunkCoordinate
         this.chunkSize = chunkSize
@@ -44,6 +48,9 @@ class Chunk {
         this.heightMap2D = [[]]
         this.targetScene = targetScene
         this.physicsWorld = physicsWorld
+
+        this.peakHeight = peakHeight;
+        this.terrainSmoothing = terrainSmoothing
 
         this.geometry = new THREE.PlaneGeometry(this.chunkSize, this.chunkSize, this.split, this.split)
         this.material = new THREE.MeshLambertMaterial()
@@ -109,6 +116,9 @@ class Chunk {
         mesh.name = this.getKey()
         
         this.generateColor(mesh);
+
+        mesh.receiveShadow = true;
+        mesh.castShadow = true;
 
         return mesh
     }

@@ -13,7 +13,7 @@ import * as CANNON from 'cannon-es'
  * @param {number} seed Random seed for world generation
  */
 class ChunkSystem {
-    constructor(chunk_size, chunk_div, distance, track, targetScene, targetPhysics, seed) {
+    constructor(chunk_size, chunk_div, distance, track, targetScene, targetPhysics, seed, peakHeight, terrainSmoothing) {
         this.chunk_size = chunk_size
         this.chunk_div = chunk_div
         this.distance = distance
@@ -22,6 +22,9 @@ class ChunkSystem {
         this.targetScene = targetScene
         this.targetPhysics = targetPhysics
         this.seed = seed
+
+        this.peakHeight = peakHeight;
+        this.terrainSmoothing = terrainSmoothing;
 
         this.loaded_chunks = new Map()
 
@@ -83,7 +86,7 @@ class ChunkSystem {
         let z_n = z + this.chunk_offset_z
         let id = x_n+":"+z_n
         if(this.loaded_chunks[id] != null) return
-        var chunk = new Chunk(x_n, z_n, this.chunk_size, this.chunk_div, this.seed, this.targetScene, this.targetPhysics)
+        var chunk = new Chunk(x_n, z_n, this.chunk_size, this.chunk_div, this.seed, this.targetScene, this.targetPhysics, this.peakHeight, this.terrainSmoothing)
         this.loaded_chunks.set(chunk.getKey(), chunk)
         /* scene.add(mesh) */
     }
@@ -101,6 +104,13 @@ class ChunkSystem {
         let ret = new THREE.Vector3(Math.floor(track.car.position.x / this.chunk_size), 0, Math.floor(track.car.position.z / this.chunk_size))
         
         return ret
+    }
+
+    removeAllChunks()
+    {
+        this.loaded_chunks.forEach((chunk) => {
+            chunk.delete();
+        });
     }
     
 }

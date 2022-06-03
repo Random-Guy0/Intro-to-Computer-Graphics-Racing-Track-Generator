@@ -76,7 +76,7 @@
 		var physicsWorld = new CANNON.World();
 		physicsWorld.gravity.set(0, -9.8, 0);
 		physicsWorld.broadphase = new CANNON.SAPBroadphase(physicsWorld);
-		physicsWorld.solver.iterations = 10;
+		physicsWorld.solver.iterations = 10000;
 		//physicsWorld.allowSleep = true;
 
 
@@ -114,9 +114,29 @@
 		}) 
 
 		//then add lighting
-		var cameralight = new THREE.PointLight(new THREE.Color(1, 1, 1), 1);
-		camera.add(cameralight);
+		//var cameralight = new THREE.PointLight(new THREE.Color(1, 1, 1), 1);
+		//cameralight.castShadow = true;
+		//camera.add(cameralight);
 		scene.add(camera);
+
+		var directionalLight = new THREE.DirectionalLight(0xffffff, 0.75);
+		directionalLight.position.set(10, 70, 10);
+		directionalLight.castShadow = true;
+		scene.add(directionalLight);
+
+		var ambientlight = new THREE.AmbientLight(new THREE.Color(1,1,1),0.2);
+  		scene.add(ambientlight);
+
+		directionalLight.shadow.mapSize.width = 512;
+		directionalLight.shadow.mapSize.height = 512;
+		directionalLight.shadow.camera.near = 0.01;
+		directionalLight.shadow.camera.far = 500;
+		directionalLight.shadow.camera.top = 5;
+		directionalLight.shadow.camera.bottom = -5;
+		directionalLight.shadow.camera.left = -5;
+		directionalLight.shadow.camera.right = 5;
+		const helper = new THREE.CameraHelper(directionalLight.shadow.camera)
+		scene.add(helper)
 
 		//Add car to scene
 		CarModelLoader.addCarToScene(5, scene);
@@ -131,7 +151,7 @@
 		}
 
 		var carPhysicsProperties = {
-			move_speed: 2.5,
+			move_speed: 1.0,
 			turn_speed: 1.0
 		}
 
@@ -217,17 +237,36 @@
 		/* var chunk = new Chunk(0, 0, 100, 128, seed, scene, physicsWorld)
 		var chunk = new Chunk(0, 1, 100, 128, seed, scene, physicsWorld)
 		var chunk = new Chunk(1, 1, 100, 128, seed, scene, physicsWorld) */
+		var peakHeight = 60;
+		var terrainSmoothing = 300;
 		var chunkSystem
 		var chunkSystemFlag = false
 		var car;
 		var carBody;
-		var delta = new THREE.Vector3();
+		//var delta = new THREE.Quaternion();
+		var wheels = [];
+		var wheelBodies = [];
+		var wheelMat;
+		
+		var lightOffset = new THREE.Vector3();
+
 		//final update loop
 		var MyUpdateLoop = function () {
 			var deltaTime = clock.getDelta();
 
 			if (carControls == null && scene.getObjectByName("Car") != null) {
 				car = scene.getObjectByName("Car");
+				directionalLight.target = car;
+				lightOffset.subVectors(directionalLight.position, car.position);
+				console.log(car.isMesh);
+				for(var i = 0; i < car.children.length; i++)
+				{
+					console.log(car.children[i].isMesh);
+					if(car.children[i].isMesh)
+					{
+						car.children[i].castShadow = true;
+					}
+				}
 				//car.position.y += 5;
 				//car.rotateY(-Math.PI / 2);
 				car.add(camera);
@@ -236,12 +275,31 @@
 				//meshes.push(car);
 				//physicsWorld.addBody(body);
 				//bodies.push(body);
-				car.castShadow = true;
+				wheelBodies = carControls.wheelBodies;
+				wheelMat = new THREE.MeshPhongMaterial(CarModelLoader.getMaterialsObject().tyre_colour);
+				wheelMat.wireframe = true;
+				for(var i = 0; i < wheelBodies.length; i++)
+				{
+					var wheelGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.2, 20);
+					wheelGeometry.rotateX(-Math.PI / 2);
+					var wheel = new THREE.Mesh(wheelGeometry, wheelMat);
+					wheel.position.copy(wheelBodies[i].position);
+					wheel.quaternion.copy(wheelBodies[i].quaternion);
+					wheels.push(wheel);
+					scene.add(wheel);
+				}
+
+				var plane = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshLambertMaterial(1, 1, 1));
+				plane.position.y += 2;
+				plane.rotateX(-Math.PI / 2)
+				plane.material.side = THREE.DoubleSide;
+				plane.castShadow = true;
+				scene.add(plane);
 			}
 			else if (carControls != null) {
 				if (!chunkSystemFlag) {
 					chunkSystemFlag = true
-					chunkSystem = new ChunkSystem(256, 257, 2, carControls, scene, physicsWorld, seed)
+					chunkSystem = new ChunkSystem(256, 257, 2, carControls, scene, physicsWorld, seed, peakHeight, terrainSmoothing)
 				}
 				chunkSystem.updateChunk(carControls)
 				carControls.move();
@@ -285,13 +343,24 @@
 			}
 
 			if (car != null) {
+				//delta = camera.quaternion;
 				car.position.copy(carBody.chassisBody.position);
-				car.quaternion.copy(carBody.chassisBody.quaternion);				
+				car.quaternion.copy(carBody.chassisBody.quaternion);
+				var newLightPos = new THREE.Vector3();
+				newLightPos.addVectors(car.position, lightOffset);
+				directionalLight.position.copy(newLightPos);
+				
+				for(var i = 0; i < wheelBodies.length; i++)
+				{
+					wheels[i].position.copy(wheelBodies[i].position);
+					wheels[i].quaternion.copy(wheelBodies[i].quaternion);
+				}
 			}
 		}
 
 		function updateCamera() {
 			if (car != null) {
+				//camera.quaternion.copy(delta);
 				camera.lookAt(car.position);
 			}
 		}
@@ -301,7 +370,7 @@
 			carBody.chassisBody.angularVelocity = new CANNON.Vec3(0, 0, 0);
 			carBody.chassisBody.linearVelocity = new CANNON.Vec3(0, 0, 0);
 			carBody.chassisBody.quaternion.copy(new CANNON.Quaternion());
-			carBody.chassisBody.position.y += 5;
+			carBody.chassisBody.position.y += 2;
 		}};
 
 		requestAnimationFrame(MyUpdateLoop);
@@ -330,18 +399,31 @@
 		}
 		window.addEventListener('keydown', onKeyDown, false)
 
+		var terrain_properties = {
+			peak_height: peakHeight,
+			terrain_smoothing: terrainSmoothing,
+			reset_terrain: function()
+			{
+				chunkSystem.removeAllChunks();
+				resetCarPos.reset_car();
+				carBody.chassisBody.position.y += 100;
+				chunkSystem = new ChunkSystem(256, 257, 2, carControls, scene, physicsWorld, seed, peakHeight, terrainSmoothing);
+			}
+		};
+
 		var gui
 		var carColours
 		var carPhysics
 		var worldPropertyGUI
+		var terrainPropertiesGUI
 		const buildGUI = () => {
 			gui = new dat.GUI()
 			// Colours folder
 			carColours = gui.addFolder('Colours')
 			carColours.addColor(carColourProperties, 'body_colour').onChange(val => { CarModelLoader.updateCarMaterial(val, carColourProperties.disk_colour, carColourProperties.tyre_colour, carColourProperties.wheel_colour, carColourProperties.window_tint) })
 			carColours.addColor(carColourProperties, 'disk_colour').onChange(val => { CarModelLoader.updateCarMaterial(carColourProperties.body_colour, val, carColourProperties.tyre_colour, carColourProperties.wheel_colour, carColourProperties.window_tint) })
-			carColours.addColor(carColourProperties, 'tyre_colour').onChange(val => { CarModelLoader.updateCarMaterial(carColourProperties.body_colour, carColourProperties.disk_colour, val, carColourProperties.wheel_colour, carColourProperties.window_tint) })
-			carColours.addColor(carColourProperties, 'wheel_colour').onChange(val => { CarModelLoader.updateCarMaterial(carColourProperties.body_colour, carColourProperties.disk_colour, carColourProperties.tyre_colour, val, carColourProperties.window_tint) })
+			carColours.addColor(carColourProperties, 'tyre_colour').onChange(val => { CarModelLoader.updateCarMaterial(carColourProperties.body_colour, carColourProperties.disk_colour, val, carColourProperties.wheel_colour, carColourProperties.window_tint); wheelMat.color.setHex(val); })
+			carColours.addColor(carColourProperties, 'wheel_colour').onChange(val => { CarModelLoader.updateCarMaterial(carColourProperties.body_colour, carColourProperties.disk_colour, carColourProperties.tyre_colour, val, carColourProperties.window_tint); })
 			carColours.addColor(carColourProperties, 'window_tint').onChange(val => { CarModelLoader.updateCarMaterial(carColourProperties.body_colour, carColourProperties.disk_colour, carColourProperties.tyre_colour, carColourProperties.wheel_colour, val) })
 
 			// Car Physics folder
@@ -356,6 +438,11 @@
 			worldPropertyGUI.addColor(worldProperties, 'fog_colour').onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
 			worldPropertyGUI.add(worldProperties, 'fog_near', 0, 1500, 1).onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
 			worldPropertyGUI.add(worldProperties, 'fog_far', 10, 2000, 1).onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
+
+			terrainPropertiesGUI = gui.addFolder('Terrain Properties');
+			terrainPropertiesGUI.add(terrain_properties, 'peak_height').onChange(val => { peakHeight = val; });
+			terrainPropertiesGUI.add(terrain_properties, 'terrain_smoothing').onChange(val => { peakHeight = val });
+			terrainPropertiesGUI.add(terrain_properties, 'reset_terrain');
 
 			// Camera FOV
 			gui.add(cameraProperties, 'fov', 25, 100).onChange(val => {

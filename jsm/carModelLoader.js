@@ -41,7 +41,7 @@ function addCarToScene (carSize, targetScene, bodyColor = DEF_BODY_COL, diskColo
         loader.load(CAR_MODEL_DIRECTORY, (obj) => {
             obj.traverse (
                 (child) => {
-                        console.log(child)
+                        //console.log(child)
                 }
             )
 
@@ -68,7 +68,7 @@ function addCarToScene (carSize, targetScene, bodyColor = DEF_BODY_COL, diskColo
             boundingBox.getCenter(center)
             boundingBox.getSize(size)
             var min = boundingBox.min
-            console.log(size.x + " " + size.y)
+            //console.log(size.x + " " + size.y)
         
             var sca = new THREE.Matrix4()
             var tra = new THREE.Matrix4()
@@ -103,7 +103,7 @@ function updateCarMaterial (bodyColor = 0x000000, diskColor = 0xFFFFFF, tyreColo
 }
 
 function getMaterialsObject() {
-    console.log([bodyMat, diskMat, tyreMat, wheelMat, windowMat])
+    //console.log([bodyMat, diskMat, tyreMat, wheelMat, windowMat])
     if((bodyMat && diskMat && tyreMat && wheelMat && windowMat)){
         return {
             body_colour: bodyMat.color.getHex(),
