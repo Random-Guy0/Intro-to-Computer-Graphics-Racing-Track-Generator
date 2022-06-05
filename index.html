@@ -430,7 +430,8 @@
 		const handbrakeInactiveColour = '#69ff69'
 		const infoEl = document.getElementById("info")
 		const controlsHTML = `<p>Controls: WASD to move/steer the car, spacebar to toggle handbrake, R to reset car position</p>\n
-		<p>Leave custom seed blank to generate new seed.</p>`
+		<p>Leave custom seed blank to generate new seed.</p>\n
+		<p>Reset the terrain to see updated terrain properties.</p>`
 		const updateHud = () => {
 			let speed = carControls.getSpeed()
 			let handbrakeStatus = carControls.getBrakeStatus()
