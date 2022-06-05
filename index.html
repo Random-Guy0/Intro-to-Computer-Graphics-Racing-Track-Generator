@@ -36,7 +36,7 @@
 	</style>
 
 	<div id="info">
-		<p></p>
+		
 	</div>
 
 	<script type="importmap">
@@ -78,8 +78,6 @@
 		physicsWorld.broadphase = new CANNON.SAPBroadphase(physicsWorld);
 		physicsWorld.solver.iterations = 10000;
 		//physicsWorld.allowSleep = true;
-
-
 
 		//create the scene
 		var scene = new THREE.Scene();
@@ -305,6 +303,7 @@
 				}
 				chunkSystem.updateChunk(carControls)
 				carControls.move();
+				updateHud()
 			}
 			/* player.move()
 			if (!chunkSystemFlag) {
@@ -448,6 +447,28 @@
 
 			gui.open()
 			guiBuilt = true
+		}
+
+		const handbrakeActiveColour = 'red'
+		const handbrakeInactiveColour = '#69ff69'
+		const infoEl = document.getElementById("info")
+		const controlsHTML = `<p>Controls: WASD to move/steer the car, spacebar to toggle handbrake, R to reset car position</p>`
+		const updateHud = () => {
+			let speed = carControls.getSpeed()
+			let handbrakeStatus = carControls.getBrakeStatus()
+			let speedHTML = "<p>Speed: " + speed + "</p>"
+			let handbrakeColour = 0x000000
+			let handbrakeText = ""
+			if(handbrakeStatus) {
+				handbrakeColour = handbrakeActiveColour 
+				handbrakeText = "Handbrake Active"
+			}
+			else {
+				handbrakeColour = handbrakeInactiveColour
+				handbrakeText = "Handbrake Inactive"
+			}
+			let handbrakeHTML = "<p style=\"color:" + handbrakeColour + ";\">" + handbrakeText + "</p>"
+			infoEl.innerHTML = controlsHTML + "\n" + speedHTML +"\n"+ handbrakeHTML
 		}
 
 

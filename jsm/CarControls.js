@@ -291,6 +291,18 @@ class CarControls
         this.moveSpeed = carProperties.move_speed
         this.turnSpeed = carProperties.turn_speed
     }
+
+    getSpeed() {
+        let velocity = this.body.chassisBody.velocity;
+        var localVelocity = this.body.chassisBody.vectorToLocalFrame(new this.CANNON.Vec3(velocity.x, 0.0, velocity.z));
+
+        var localSpeed = localVelocity.length();
+        return Math.round(localSpeed)
+    }
+
+    getBrakeStatus() {
+        return brake
+    }
 }
 
 export default CarControls;
