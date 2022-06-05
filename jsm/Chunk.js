@@ -37,7 +37,7 @@ class Chunk {
 
     terrainSmoothing
 
-    constructor(xChunkCoordinate, yChunkCoordinate, chunkSize, split, noiseSeed, targetScene, physicsWorld, peakHeight, terrainSmoothing) {
+    constructor(xChunkCoordinate, yChunkCoordinate, chunkSize, split, noiseSeed, targetScene, physicsWorld, peakHeight, terrainSmoothing, numTrees, treeObject) {
         this.xChunkCoordinate = xChunkCoordinate
         this.yChunkCoordinate = yChunkCoordinate
         this.chunkSize = chunkSize
@@ -50,7 +50,9 @@ class Chunk {
         this.physicsWorld = physicsWorld
 
         this.peakHeight = peakHeight;
-        this.terrainSmoothing = terrainSmoothing
+
+        this.numTrees = numTrees;
+        this.treeObject = treeObject;
 
         this.geometry = new THREE.PlaneGeometry(this.chunkSize, this.chunkSize, this.split, this.split)
         this.material = new THREE.MeshLambertMaterial()
@@ -120,7 +122,32 @@ class Chunk {
         mesh.receiveShadow = true;
         mesh.castShadow = true;
 
+        //this.generateTrees(mesh, this.numTrees, this.noiseSeed);
+
         return mesh
+    }
+
+
+    
+    generateTrees(mesh, numTrees, seed)
+    {
+        if(this.treeObject != null)
+        {
+            for(var i = 0; i <= numTrees; i++)
+            {   
+                var tree = this.treeObject.clone();
+
+                var height = this.heightMap2D[Math.abs(this.xChunkCoordinate)][Math.abs(this.yChunkCoordinate)];
+
+                
+
+                mesh.add(tree);
+
+                tree.position.set(this.xChunkCoordinate, this.yChunkCoordinate, 0);
+
+                console.log(tree.position);
+            }
+        }
     }
 
     generateColor(mesh)

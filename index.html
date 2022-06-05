@@ -127,16 +127,16 @@
 		var ambientlight = new THREE.AmbientLight(new THREE.Color(1,1,1),0.2);
   		scene.add(ambientlight);
 
-		directionalLight.shadow.mapSize.width = 512;
-		directionalLight.shadow.mapSize.height = 512;
+		directionalLight.shadow.mapSize.width = 2048;
+		directionalLight.shadow.mapSize.height = 2048;
 		directionalLight.shadow.camera.near = 0.01;
 		directionalLight.shadow.camera.far = 500;
-		directionalLight.shadow.camera.top = 5;
-		directionalLight.shadow.camera.bottom = -5;
-		directionalLight.shadow.camera.left = -5;
-		directionalLight.shadow.camera.right = 5;
-		const helper = new THREE.CameraHelper(directionalLight.shadow.camera)
-		scene.add(helper)
+		directionalLight.shadow.camera.top = 50;
+		directionalLight.shadow.camera.bottom = -50;
+		directionalLight.shadow.camera.left = -50;
+		directionalLight.shadow.camera.right = 50;
+		//const helper = new THREE.CameraHelper(directionalLight.shadow.camera)
+		///scene.add(helper)
 
 		//Add car to scene
 		CarModelLoader.addCarToScene(5, scene);
@@ -154,6 +154,14 @@
 			move_speed: 1.0,
 			turn_speed: 1.0
 		}
+
+		var resetCarPos = { reset_car: function()
+		{
+			carBody.chassisBody.angularVelocity = new CANNON.Vec3(0, 0, 0);
+			carBody.chassisBody.linearVelocity = new CANNON.Vec3(0, 0, 0);
+			carBody.chassisBody.quaternion.copy(new CANNON.Quaternion());
+			carBody.chassisBody.position.y += 2;
+		}};
 
 		var worldProperties = {
 			gravity: 9.8,	// Multiplied by -1
@@ -258,10 +266,10 @@
 				car = scene.getObjectByName("Car");
 				directionalLight.target = car;
 				lightOffset.subVectors(directionalLight.position, car.position);
-				console.log(car.isMesh);
+				//console.log(car.isMesh);
 				for(var i = 0; i < car.children.length; i++)
 				{
-					console.log(car.children[i].isMesh);
+					//console.log(car.children[i].isMesh);
 					if(car.children[i].isMesh)
 					{
 						car.children[i].castShadow = true;
@@ -288,13 +296,7 @@
 					wheels.push(wheel);
 					scene.add(wheel);
 				}
-
-				var plane = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshLambertMaterial(1, 1, 1));
-				plane.position.y += 2;
-				plane.rotateX(-Math.PI / 2)
-				plane.material.side = THREE.DoubleSide;
-				plane.castShadow = true;
-				scene.add(plane);
+				resetCarPos.reset_car();
 			}
 			else if (carControls != null) {
 				if (!chunkSystemFlag) {
@@ -364,14 +366,6 @@
 				camera.lookAt(car.position);
 			}
 		}
-
-		var resetCarPos = { reset_car: function()
-		{
-			carBody.chassisBody.angularVelocity = new CANNON.Vec3(0, 0, 0);
-			carBody.chassisBody.linearVelocity = new CANNON.Vec3(0, 0, 0);
-			carBody.chassisBody.quaternion.copy(new CANNON.Quaternion());
-			carBody.chassisBody.position.y += 2;
-		}};
 
 		requestAnimationFrame(MyUpdateLoop);
 
