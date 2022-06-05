@@ -36,9 +36,6 @@ class ChunkSystem {
         this.material = new THREE.MeshBasicMaterial({
             color: 0xaaaaaa
         }) */
-
-        this.treeObject;
-        //this.loadTreeModel();
         
         this.chunk_coord_pos = this.getTargetChunkCoord(track)
         this.init()
@@ -118,68 +115,6 @@ class ChunkSystem {
         this.loaded_chunks.forEach((chunk) => {
             chunk.delete();
         });
-    }
-
-    loadTreeModel()
-    {
-        var cur = this;
-        var tree;
-        var mtlLoader = new MTLLoader();
-        mtlLoader.load('../models/Lowpoly_tree_sample.mtl', function(materials)
-        {
-            materials.side = THREE.DoubleSide;
-            materials.preload();
-            var objload = new OBJLoader();
-            objload.setMaterials(materials);
-            objload.load('../models/Lowpoly_tree_sample.obj', function(object)
-            {
-                var box3 = new THREE.Box3();
-		        box3.setFromObject (object);
-		        var CenterBB= new THREE.Vector3();
-			    var SizeBB = new THREE.Vector3();
-		        box3.getCenter(CenterBB);
-		        box3.getSize(SizeBB);
-		        for ( var i = 0, l = object.children.length; i < l; i ++ ) 
-		        {
-			          object.children[i].material.color= new THREE.Color(1,1,1);
-		 	    }
-			
-			    var sca = new THREE.Matrix4();
-			    var tra = new THREE.Matrix4();
-			    var combined = new THREE.Matrix4();
-
-			    sca.makeScale(20/SizeBB.length(),20/SizeBB.length(),20/SizeBB.length());
-			    tra.makeTranslation (-CenterBB.x,-CenterBB.y,-CenterBB.z);
-			    combined.multiply(sca);
-			    combined.multiply(tra);
-
-                var rot = new THREE.Matrix4();
-                rot.makeRotationX(Math.PI / 2);
-                combined.multiply(rot);
-
-                object.applyMatrix4(combined);
-
-                for(var i = 0; i < object.children.length; i++)
-				{
-					if(object.children[i].isMesh)
-					{
-						object.children[i].castShadow = true;
-                        //object.children[i].receiveShadow = true;
-					}
-                }
-
-                tree = object;
-
-                cur.finishTreeLoad(tree);
-
-            })
-        });
-    }
-
-    finishTreeLoad(tree)
-    {
-        this.treeObject = tree;
-        this.init();
     }
     
 }
