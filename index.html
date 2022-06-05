@@ -439,7 +439,7 @@
 			// World Property folder
 			worldPropertyGUI = gui.addFolder('World Properties')
 			worldPropertyGUI.add(worldProperties, 'gravity', 0.0, 20.0, 0.05).onChange(val => physicsWorld.gravity.set(0, -val, 0)).name("Gravity")
-			worldPropertyGUI.addColor(worldProperties, 'background_colour').onChange(val => scene.background = new THREE.Color(val)).name("Background Colour")
+			worldPropertyGUI.addColor(worldProperties, 'background_colour').onChange(val => scene.background = new THREE.Color(val)).name("Bg Colour")
 			worldPropertyGUI.addColor(worldProperties, 'fog_colour').onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far)).name("Fog Colour")
 			worldPropertyGUI.add(worldProperties, 'fog_near', 0, 1500, 1).onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
 			worldPropertyGUI.add(worldProperties, 'fog_far', 10, 2000, 1).onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
