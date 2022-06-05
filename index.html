@@ -392,15 +392,27 @@
 		}
 		window.addEventListener('keydown', onKeyDown, false)
 
+		let seedHTML = ""
 		var terrain_properties = {
 			peak_height: peakHeight,
 			terrain_smoothing: terrainSmoothing,
+			terrain_seed: '',
+			current_seed: seed,	// Current world seed, hidden value
 			reset_terrain: function()
 			{
+				let terrainSeed = parseInt(terrain_properties.terrain_seed)
+				if(isNaN(terrainSeed) || terrain_properties.terrain_seed == '') {
+					terrainSeed = Math.random()
+					terrain_properties.current_seed = terrainSeed
+				}
 				chunkSystem.removeAllChunks();
 				resetCarPos.reset_car();
 				carBody.chassisBody.position.y += 100;
-				chunkSystem = new ChunkSystem(256, 257, 2, carControls, scene, physicsWorld, seed, peakHeight, terrainSmoothing);
+				chunkSystem = new ChunkSystem(256, 257, 2, carControls, scene, physicsWorld, terrainSeed, peakHeight, terrainSmoothing);
+			},
+			get_seed: () => {
+				navigator.clipboard.writeText(terrain_properties.current_seed);
+				seedHTML = "<p>Seed Copied to clipboard ["+terrain_properties.current_seed+"]</p>"
 			}
 		};
 
@@ -413,37 +425,39 @@
 			gui = new dat.GUI()
 			// Colours folder
 			carColours = gui.addFolder('Colours')
-			carColours.addColor(carColourProperties, 'body_colour').onChange(val => { CarModelLoader.updateCarMaterial(val, carColourProperties.disk_colour, carColourProperties.tyre_colour, carColourProperties.wheel_colour, carColourProperties.window_tint) })
-			carColours.addColor(carColourProperties, 'disk_colour').onChange(val => { CarModelLoader.updateCarMaterial(carColourProperties.body_colour, val, carColourProperties.tyre_colour, carColourProperties.wheel_colour, carColourProperties.window_tint) })
-			carColours.addColor(carColourProperties, 'tyre_colour').onChange(val => { CarModelLoader.updateCarMaterial(carColourProperties.body_colour, carColourProperties.disk_colour, val, carColourProperties.wheel_colour, carColourProperties.window_tint); wheelMat.color.setHex(val); })
-			carColours.addColor(carColourProperties, 'wheel_colour').onChange(val => { CarModelLoader.updateCarMaterial(carColourProperties.body_colour, carColourProperties.disk_colour, carColourProperties.tyre_colour, val, carColourProperties.window_tint); })
-			carColours.addColor(carColourProperties, 'window_tint').onChange(val => { CarModelLoader.updateCarMaterial(carColourProperties.body_colour, carColourProperties.disk_colour, carColourProperties.tyre_colour, carColourProperties.wheel_colour, val) })
+			carColours.addColor(carColourProperties, 'body_colour').onChange(val => { CarModelLoader.updateCarMaterial(val, carColourProperties.disk_colour, carColourProperties.tyre_colour, carColourProperties.wheel_colour, carColourProperties.window_tint) }).name("Body Colour")
+			carColours.addColor(carColourProperties, 'disk_colour').onChange(val => { CarModelLoader.updateCarMaterial(carColourProperties.body_colour, val, carColourProperties.tyre_colour, carColourProperties.wheel_colour, carColourProperties.window_tint) }).name("Brake disk Colour")
+			carColours.addColor(carColourProperties, 'tyre_colour').onChange(val => { CarModelLoader.updateCarMaterial(carColourProperties.body_colour, carColourProperties.disk_colour, val, carColourProperties.wheel_colour, carColourProperties.window_tint); wheelMat.color.setHex(val); }).name("Tyre Colour")
+			carColours.addColor(carColourProperties, 'wheel_colour').onChange(val => { CarModelLoader.updateCarMaterial(carColourProperties.body_colour, carColourProperties.disk_colour, carColourProperties.tyre_colour, val, carColourProperties.window_tint); }).name("Wheel Colour")
+			carColours.addColor(carColourProperties, 'window_tint').onChange(val => { CarModelLoader.updateCarMaterial(carColourProperties.body_colour, carColourProperties.disk_colour, carColourProperties.tyre_colour, carColourProperties.wheel_colour, val) }).name("Window Colour")
 
 			// Car Physics folder
 			carPhysics = gui.addFolder('Car Physics')
-			carPhysics.add(carPhysicsProperties, 'move_speed', 0.5, 7.5, 0.5).onChange(_ => carControls.setVariable(carPhysicsProperties))
-			carPhysics.add(carPhysicsProperties, 'turn_speed', 0.05, 1, 0.05).onChange(_ => carControls.setVariable(carPhysicsProperties))
+			carPhysics.add(carPhysicsProperties, 'move_speed', 0.5, 7.5, 0.5).onChange(_ => carControls.setVariable(carPhysicsProperties)).name("Movement Speed")
+			carPhysics.add(carPhysicsProperties, 'turn_speed', 0.05, 1, 0.05).onChange(_ => carControls.setVariable(carPhysicsProperties)).name("Turning speed")
 
 			// World Property folder
 			worldPropertyGUI = gui.addFolder('World Properties')
-			worldPropertyGUI.add(worldProperties, 'gravity', 0.0, 20.0, 0.05).onChange(val => physicsWorld.gravity.set(0, -val, 0))
-			worldPropertyGUI.addColor(worldProperties, 'background_colour').onChange(val => scene.background = new THREE.Color(val))
-			worldPropertyGUI.addColor(worldProperties, 'fog_colour').onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
+			worldPropertyGUI.add(worldProperties, 'gravity', 0.0, 20.0, 0.05).onChange(val => physicsWorld.gravity.set(0, -val, 0)).name("Gravity")
+			worldPropertyGUI.addColor(worldProperties, 'background_colour').onChange(val => scene.background = new THREE.Color(val)).name("Background Colour")
+			worldPropertyGUI.addColor(worldProperties, 'fog_colour').onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far)).name("Fog Colour")
 			worldPropertyGUI.add(worldProperties, 'fog_near', 0, 1500, 1).onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
 			worldPropertyGUI.add(worldProperties, 'fog_far', 10, 2000, 1).onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
 
 			terrainPropertiesGUI = gui.addFolder('Terrain Properties');
-			terrainPropertiesGUI.add(terrain_properties, 'peak_height').onChange(val => { peakHeight = val; });
-			terrainPropertiesGUI.add(terrain_properties, 'terrain_smoothing').onChange(val => { peakHeight = val });
-			terrainPropertiesGUI.add(terrain_properties, 'reset_terrain');
+			terrainPropertiesGUI.add(terrain_properties, 'peak_height').onChange(val => { peakHeight = val; }).name("Terrain Peak Height");
+			terrainPropertiesGUI.add(terrain_properties, 'terrain_smoothing').onChange(val => { terrainSmoothing = val }).name("Terrain Smoothing");
+			terrainPropertiesGUI.add(terrain_properties, 'terrain_seed').onChange(val => { terrain_properties.terrain_seed = val }).name("Seed");
+			terrainPropertiesGUI.add(terrain_properties, 'reset_terrain').name("Reset Terrain");
+			terrainPropertiesGUI.add(terrain_properties, 'get_seed').name("Get Seed");
 
 			// Camera FOV
 			gui.add(cameraProperties, 'fov', 25, 100).onChange(val => {
 				camera.fov = val
 				camera.updateProjectionMatrix();
-			})
+			}).name("Field of View")
 
-			gui.add(resetCarPos, 'reset_car');
+			gui.add(resetCarPos, 'reset_car').name("Reset car position");
 
 			gui.open()
 			guiBuilt = true
@@ -452,7 +466,8 @@
 		const handbrakeActiveColour = 'red'
 		const handbrakeInactiveColour = '#69ff69'
 		const infoEl = document.getElementById("info")
-		const controlsHTML = `<p>Controls: WASD to move/steer the car, spacebar to toggle handbrake, R to reset car position</p>`
+		const controlsHTML = `<p>Controls: WASD to move/steer the car, spacebar to toggle handbrake, R to reset car position</p>\n
+		<p>Leave custom seed blank to generate new seed.</p>`
 		const updateHud = () => {
 			let speed = carControls.getSpeed()
 			let handbrakeStatus = carControls.getBrakeStatus()
@@ -468,7 +483,7 @@
 				handbrakeText = "Handbrake Inactive"
 			}
 			let handbrakeHTML = "<p style=\"color:" + handbrakeColour + ";\">" + handbrakeText + "</p>"
-			infoEl.innerHTML = controlsHTML + "\n" + speedHTML +"\n"+ handbrakeHTML
+			infoEl.innerHTML = controlsHTML + "\n" + seedHTML + "\n" + speedHTML +"\n"+ handbrakeHTML
 		}
 
 
