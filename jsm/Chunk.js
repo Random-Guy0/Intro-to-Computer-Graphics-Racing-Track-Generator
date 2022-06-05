@@ -37,7 +37,7 @@ class Chunk {
 
     terrainSmoothing
 
-    constructor(xChunkCoordinate, yChunkCoordinate, chunkSize, split, noiseSeed, targetScene, physicsWorld, peakHeight, terrainSmoothing, numTrees, treeObject) {
+    constructor(xChunkCoordinate, yChunkCoordinate, chunkSize, split, noiseSeed, targetScene, physicsWorld, peakHeight, terrainSmoothing, numTrees, treeObject, properties) {
         this.xChunkCoordinate = xChunkCoordinate
         this.yChunkCoordinate = yChunkCoordinate
         this.chunkSize = chunkSize
@@ -48,6 +48,8 @@ class Chunk {
         this.heightMap2D = [[]]
         this.targetScene = targetScene
         this.physicsWorld = physicsWorld
+
+        this.properties = properties
 
         this.peakHeight = peakHeight;
 
@@ -62,6 +64,7 @@ class Chunk {
         this.generateHeightMap().then(
             () => {
                 this.chunkMesh = this.generateVisual()
+                this.generateColor();
                 this.chunkMesh.position.set(xChunkCoordinate * chunkSize, 0, -yChunkCoordinate * chunkSize)
                 targetScene.add(this.chunkMesh)
             }
@@ -116,8 +119,6 @@ class Chunk {
         mesh.geometry.getAttribute('position').needsUpdate = true
         mesh.geometry.computeVertexNormals()
         mesh.name = this.getKey()
-        
-        this.generateColor(mesh);
 
         mesh.receiveShadow = true;
         mesh.castShadow = true;
@@ -150,21 +151,21 @@ class Chunk {
         }
     }
 
-    generateColor(mesh)
+    generateColor()
     {
-        var geometry = mesh.geometry;
+        var geometry = this.chunkMesh.geometry;
         var count = geometry.attributes.position.count;
         geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
         
-        var grassColor = new THREE.Color(0x63f542);
+        var grassColor = new THREE.Color(this.properties.grass);
 
-        var snowColor = new THREE.Color(0xf5fcfc);
+        var snowColor = new THREE.Color(this.properties.snow);
 
-        var rockColor = new THREE.Color(0x8f6f10);
+        var rockColor = new THREE.Color(this.properties.rock);
 
-        var sandColor = new THREE.Color(0xdbc81a);
+        var sandColor = new THREE.Color(this.properties.sand);
 
-        var darkGrassColor = new THREE.Color(0x47bf2c);
+        var darkGrassColor = new THREE.Color(this.properties.dark_grass);
 
         var vPosition = geometry.getAttribute('position');
         var vColors = geometry.attributes.color;
@@ -173,7 +174,7 @@ class Chunk {
         {
             var pos = new THREE.Vector3();
             pos.fromBufferAttribute(vPosition, i);
-            var posY = mesh.localToWorld(pos).z;
+            var posY = this.chunkMesh.localToWorld(pos).z;
             //console.log(posY);
             if(posY >= -24 && posY <= -14)
             {

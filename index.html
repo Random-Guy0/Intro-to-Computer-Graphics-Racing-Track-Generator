@@ -175,6 +175,14 @@
 			fov: 45
 		}
 
+		let terrainColour = {
+			grass: 0x63f542,
+			snow: 0xf5fcfc,
+			rock: 0x8f6f10,
+			sand: 0xdbc81a,
+			dark_grass: 0x47bf2c,
+		}
+
 
 		var guiBuilt = false			// Flag for when gui has been built
 
@@ -184,61 +192,8 @@
 
 		var groundMat = new CANNON.Material();
 
-		/* function createGround()
-		{
-			var geometry = new THREE.PlaneGeometry(1000, 1000, 128, 128);
-			var material = new THREE.MeshLambertMaterial({color: 0x32a852});
-			var terrain = new THREE.Mesh(geometry, material);
-			terrain.rotation.x = -Math.PI / 2;
-			scene.add(terrain);
-			terrain.updateMatrixWorld();
-	
-			noise.seed(Math.random());
-			var peak = 60;
-			var smoothing = 300;
-			var rawVertices = geometry.attributes.position.array;
-			for(var i = 0; i <= rawVertices.length; i+=3)
-			{
-				rawVertices[i+2] = peak * noise.perlin2(rawVertices[i] / smoothing, rawVertices[i + 1] / smoothing);
-			}
-			geometry.attributes.position.needsUpdate = true;
-			geometry.computeVertexNormals();
-	
-			//geometry = THREE.BufferGeometryUtils.mergeVertices(geometry);
-	
-			var position = geometry.attributes.position.array
-	
-			var rawFaces = 	geometry.index.array;
-	
-			var vertices = [];
-			var faces = [];
-	
-			for(var i = 0; i < position.length; i += 3)
-			{
-				vertices.push(new CANNON.Vec3(position[i], position[i + 1], position[i + 2]));
-			}
-	
-			
-			for(var i = 0; i < rawFaces.length; i += 3)
-			{
-				faces.push(rawFaces[i], rawFaces[i + 1], rawFaces[i + 2]);
-			}
-	
-			//var shape = new CANNON.ConvexPolyhedron(vertices, faces);
-			//var shape = new CANNON.Trimesh(position, rawFaces);
-			var shape = new CANNON.Box(new CANNON.Vec3(1000, 1, 1000));
-	
-			var groundBody = new CANNON.Body({
-				mass: 0,
-				material: groundMat
-			})
-			groundBody.addShape(shape);
-			//groundBody.position.set(pos.x, pos.y, pos.z);
-			physicsWorld.addBody(groundBody);
-		}
-		createGround(); */
-
 		const seed = Math.random()
+
 		// TEST CODE
 		/* var chunk = new Chunk(0, 0, 100, 128, seed, scene, physicsWorld)
 		var chunk = new Chunk(0, 1, 100, 128, seed, scene, physicsWorld)
@@ -299,7 +254,7 @@
 			else if (carControls != null) {
 				if (!chunkSystemFlag) {
 					chunkSystemFlag = true
-					chunkSystem = new ChunkSystem(256, 257, 2, carControls, scene, physicsWorld, seed, peakHeight, terrainSmoothing)
+					chunkSystem = new ChunkSystem(256, 257, 2, carControls, scene, physicsWorld, seed, peakHeight, terrainSmoothing, terrainColour)
 				}
 				chunkSystem.updateChunk(carControls)
 				carControls.move();
@@ -408,7 +363,7 @@
 				chunkSystem.removeAllChunks();
 				resetCarPos.reset_car();
 				carBody.chassisBody.position.y += 100;
-				chunkSystem = new ChunkSystem(256, 257, 2, carControls, scene, physicsWorld, terrainSeed, peakHeight, terrainSmoothing);
+				chunkSystem = new ChunkSystem(256, 257, 2, carControls, scene, physicsWorld, terrainSeed, peakHeight, terrainSmoothing, terrainColour);
 			},
 			get_seed: () => {
 				navigator.clipboard.writeText(terrain_properties.current_seed);
@@ -421,6 +376,7 @@
 		var carPhysics
 		var worldPropertyGUI
 		var terrainPropertiesGUI
+		var terrainColourGUI
 		const buildGUI = () => {
 			gui = new dat.GUI()
 			// Colours folder
@@ -450,6 +406,13 @@
 			terrainPropertiesGUI.add(terrain_properties, 'terrain_seed').onChange(val => { terrain_properties.terrain_seed = val }).name("Seed");
 			terrainPropertiesGUI.add(terrain_properties, 'reset_terrain').name("Reset Terrain");
 			terrainPropertiesGUI.add(terrain_properties, 'get_seed').name("Get Seed");
+
+			terrainColourGUI = terrainPropertiesGUI.addFolder('Terrain Colours')
+			terrainColourGUI.addColor(terrainColour, 'grass').name("Grass")
+			terrainColourGUI.addColor(terrainColour, 'snow').name("Snow")
+			terrainColourGUI.addColor(terrainColour, 'rock').name("Rock")
+			terrainColourGUI.addColor(terrainColour, 'sand').name("Sand")
+			terrainColourGUI.addColor(terrainColour, 'dark_grass').name("Dark Grass")
 
 			// Camera FOV
 			gui.add(cameraProperties, 'fov', 25, 100).onChange(val => {

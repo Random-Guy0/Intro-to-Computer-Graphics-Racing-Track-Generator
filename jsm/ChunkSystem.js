@@ -15,7 +15,7 @@ import { OBJLoader } from './loaders/OBJLoader.js';
  * @param {number} seed Random seed for world generation
  */
 class ChunkSystem {
-    constructor(chunk_size, chunk_div, distance, track, targetScene, targetPhysics, seed, peakHeight, terrainSmoothing) {
+    constructor(chunk_size, chunk_div, distance, track, targetScene, targetPhysics, seed, peakHeight, terrainSmoothing, properties) {
         this.chunk_size = chunk_size
         this.chunk_div = chunk_div
         this.distance = distance
@@ -24,6 +24,8 @@ class ChunkSystem {
         this.targetScene = targetScene
         this.targetPhysics = targetPhysics
         this.seed = seed
+
+        this.properties = properties
 
         this.peakHeight = peakHeight;
         this.terrainSmoothing = terrainSmoothing;
@@ -91,7 +93,7 @@ class ChunkSystem {
         let z_n = z + this.chunk_offset_z
         let id = x_n+":"+z_n
         if(this.loaded_chunks[id] != null) return
-        var chunk = new Chunk(x_n, z_n, this.chunk_size, this.chunk_div, this.seed, this.targetScene, this.targetPhysics, this.peakHeight, this.terrainSmoothing, 1, this.treeObject)
+        var chunk = new Chunk(x_n, z_n, this.chunk_size, this.chunk_div, this.seed, this.targetScene, this.targetPhysics, this.peakHeight, this.terrainSmoothing, 1, this.treeObject, this.properties)
         this.loaded_chunks.set(chunk.getKey(), chunk)
         /* scene.add(mesh) */
     }
