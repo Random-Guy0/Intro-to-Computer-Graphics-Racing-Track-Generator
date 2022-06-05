@@ -125,14 +125,14 @@
 		var ambientlight = new THREE.AmbientLight(new THREE.Color(1,1,1),0.2);
   		scene.add(ambientlight);
 
-		directionalLight.shadow.mapSize.width = 2048;
-		directionalLight.shadow.mapSize.height = 2048;
+		directionalLight.shadow.mapSize.width = 512;
+		directionalLight.shadow.mapSize.height = 512;
 		directionalLight.shadow.camera.near = 0.01;
 		directionalLight.shadow.camera.far = 500;
-		directionalLight.shadow.camera.top = 50;
-		directionalLight.shadow.camera.bottom = -50;
-		directionalLight.shadow.camera.left = -50;
-		directionalLight.shadow.camera.right = 50;
+		directionalLight.shadow.camera.top = 5;
+		directionalLight.shadow.camera.bottom = -5;
+		directionalLight.shadow.camera.left = -5;
+		directionalLight.shadow.camera.right = 5;
 		//const helper = new THREE.CameraHelper(directionalLight.shadow.camera)
 		///scene.add(helper)
 
@@ -149,7 +149,7 @@
 		}
 
 		var carPhysicsProperties = {
-			move_speed: 1.0,
+			move_speed: 1.5,
 			turn_speed: 1.0
 		}
 
