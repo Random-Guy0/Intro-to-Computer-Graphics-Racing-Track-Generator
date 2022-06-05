@@ -136,8 +136,11 @@
 		//const helper = new THREE.CameraHelper(directionalLight.shadow.camera)
 		///scene.add(helper)
 
+		var peakHeight = 60;
+		var terrainSmoothing = 300;
+
 		//Add car to scene
-		CarModelLoader.addCarToScene(5, scene);
+		CarModelLoader.addCarToScene(5, scene, peakHeight);
 
 		// Adjustable variables
 		var carColourProperties = {
@@ -198,8 +201,7 @@
 		/* var chunk = new Chunk(0, 0, 100, 128, seed, scene, physicsWorld)
 		var chunk = new Chunk(0, 1, 100, 128, seed, scene, physicsWorld)
 		var chunk = new Chunk(1, 1, 100, 128, seed, scene, physicsWorld) */
-		var peakHeight = 60;
-		var terrainSmoothing = 300;
+		
 		var chunkSystem
 		var chunkSystemFlag = false
 		var car;
@@ -362,7 +364,7 @@
 				}
 				chunkSystem.removeAllChunks();
 				resetCarPos.reset_car();
-				carBody.chassisBody.position.y += 100;
+				carBody.chassisBody.position.y += peakHeight + 2;
 				chunkSystem = new ChunkSystem(256, 257, 2, carControls, scene, physicsWorld, terrainSeed, peakHeight, terrainSmoothing, terrainColour);
 			},
 			get_seed: () => {

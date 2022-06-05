@@ -20,7 +20,7 @@ var wheelMat
 var windowMat
 var matLoaded = false
 
-function addCarToScene (carSize, targetScene, bodyColor = DEF_BODY_COL, diskColor = DEF_DISK_COL, tyreColor = DEF_TYRE_COL, wheelColor = DEF_WHEEL_COL, windowTint = DEF_WINDOW_COL) {
+function addCarToScene (carSize, targetScene, peakHeight, bodyColor = DEF_BODY_COL, diskColor = DEF_DISK_COL, tyreColor = DEF_TYRE_COL, wheelColor = DEF_WHEEL_COL, windowTint = DEF_WINDOW_COL) {
     var mtlLoader = new MTLLoader()
     mtlLoader.load(CAR_MATERIAL_DIRECTORY, (materials) => {
         materials.preload()
@@ -75,7 +75,7 @@ function addCarToScene (carSize, targetScene, bodyColor = DEF_BODY_COL, diskColo
             var combined = new THREE.Matrix4()
         
             sca.makeScale(carSize/size.length(),carSize/size.length(),carSize/size.length())
-            tra.makeTranslation (-center.x,-min.y + 60,-center.z)
+            tra.makeTranslation (-center.x,-min.y + peakHeight + 2,-center.z)
             
             combined.multiply(sca)
             combined.multiply(tra)
