@@ -323,7 +323,7 @@
 			current_seed: seed,	// Current world seed, hidden value
 			reset_terrain: function()
 			{
-				let terrainSeed = parseInt(terrain_properties.terrain_seed)
+				let terrainSeed = parseFloat(terrain_properties.terrain_seed)
 				if(isNaN(terrainSeed) || terrain_properties.terrain_seed == '') {
 					terrainSeed = Math.random()
 					terrain_properties.current_seed = terrainSeed
