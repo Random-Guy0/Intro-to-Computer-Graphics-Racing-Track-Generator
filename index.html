@@ -124,12 +124,12 @@
 		//const helper = new THREE.CameraHelper(directionalLight.shadow.camera)
 		///scene.add(helper)
 
-		//Add car to scene
-		CarModelLoader.addCarToScene(5, scene, peakHeight);
-
 		// #region Settings
 		var peakHeight = 60;
 		var terrainSmoothing = 300;
+
+		//Add car to scene
+		CarModelLoader.addCarToScene(5, scene, peakHeight);
 
 		// Adjustable variables
 		var carColourProperties = {
