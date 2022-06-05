@@ -39,6 +39,7 @@
 		
 	</div>
 
+	<!-- Script Imports -->
 	<script type="importmap">
 			{
 				"imports": {
@@ -49,74 +50,61 @@
 			}
 		</script>
 	<script src="jsm/CarControls.js" type="module"></script>
-
-	<script type="module" src="jsm/carModelLoader.js"></script>
+	<script type="module" src="jsm/carModelLoader.js"></script>	
 	<script src="jsm/dat.gui.min.js"></script>
-	<!-- <script src="jsm/physics/cannon.js"></script> -->
 	<script src="jsm/perlin.js"></script>
 	<script type="module">
-		// Imports
+		// #region Imports
+		// threejs, cannonjs imports
 		import * as THREE from 'three';
 		import * as CANNON from 'cannon-es'
-		import CannonDebugger from 'cannon-debug'
-		import Player from './jsm/testCar.js'
 		import { OrbitControls } from './jsm/controls/OrbitControls.js';
-
 		import { MTLLoader } from './jsm/loaders/MTLLoader.js';
 		import { OBJLoader } from './jsm/loaders/OBJLoader.js';
 
+		// Car imports
+		import * as CarModelLoader from './jsm/carModelLoader.js'
 		import CarControls from './jsm/CarControls.js';
+
+		// Terrain Generation imports
 		import Chunk from './jsm/Chunk.js'
 		import ChunkSystem from './jsm/ChunkSystem.js'
 
-		import * as CarModelLoader from './jsm/carModelLoader.js'
+		// Debug
+		import CannonDebugger from 'cannon-debug'
+		import Player from './jsm/testCar.js'
+		//#endregion
 
 		var clock = new THREE.Clock();
 
+		// Setup Physics world
 		var physicsWorld = new CANNON.World();
 		physicsWorld.gravity.set(0, -9.8, 0);
 		physicsWorld.broadphase = new CANNON.SAPBroadphase(physicsWorld);
 		physicsWorld.solver.iterations = 10000;
-		//physicsWorld.allowSleep = true;
 
-		//create the scene
+		// Scene, camera, and renderer setup
 		var scene = new THREE.Scene();
 		var ratio = window.innerWidth / window.innerHeight;
-		//create the perspective camera
-		//for parameters see https://threejs.org/docs/#api/cameras/PerspectiveCamera
 		var camera = new THREE.PerspectiveCamera(45, ratio, 0.1, 1000);
-
-		//set the camera position
 		camera.position.set(0, 10, 15);
-		// and the direction
 		camera.lookAt(0, 0, 1);
-
-		//create the webgl renderer
 		var renderer = new THREE.WebGLRenderer();
-
-		//set the size of the rendering window
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		renderer.shadowMap.enabled = true;
 		renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-		//add the renderer to the current document
 		document.body.appendChild(renderer.domElement);
+		scene.add(camera);
 
-		// add the new control and link to the current camera to transform its position
-
+		// Controls
 		var controls = new OrbitControls(camera, renderer.domElement);
 
 		// Debug
-		const cannonDebugger = new CannonDebugger(scene, physicsWorld, {
+		/* const cannonDebugger = new CannonDebugger(scene, physicsWorld, {
 			color: 0x000000,
-		}) 
+		})  */
 
-		//then add lighting
-		//var cameralight = new THREE.PointLight(new THREE.Color(1, 1, 1), 1);
-		//cameralight.castShadow = true;
-		//camera.add(cameralight);
-		scene.add(camera);
-
+		// Lighting
 		var directionalLight = new THREE.DirectionalLight(0xffffff, 0.75);
 		directionalLight.position.set(10, 70, 10);
 		directionalLight.castShadow = true;
@@ -136,11 +124,12 @@
 		//const helper = new THREE.CameraHelper(directionalLight.shadow.camera)
 		///scene.add(helper)
 
-		var peakHeight = 60;
-		var terrainSmoothing = 300;
-
 		//Add car to scene
 		CarModelLoader.addCarToScene(5, scene, peakHeight);
+
+		// #region Settings
+		var peakHeight = 60;
+		var terrainSmoothing = 300;
 
 		// Adjustable variables
 		var carColourProperties = {
@@ -185,7 +174,7 @@
 			sand: 0xdbc81a,
 			dark_grass: 0x47bf2c,
 		}
-
+		// #endregion
 
 		var guiBuilt = false			// Flag for when gui has been built
 
@@ -213,7 +202,7 @@
 		
 		var lightOffset = new THREE.Vector3();
 
-		//final update loop
+		// Update loop
 		var MyUpdateLoop = function () {
 			var deltaTime = clock.getDelta();
 
@@ -221,23 +210,16 @@
 				car = scene.getObjectByName("Car");
 				directionalLight.target = car;
 				lightOffset.subVectors(directionalLight.position, car.position);
-				//console.log(car.isMesh);
 				for(var i = 0; i < car.children.length; i++)
 				{
-					//console.log(car.children[i].isMesh);
 					if(car.children[i].isMesh)
 					{
 						car.children[i].castShadow = true;
 					}
 				}
-				//car.position.y += 5;
-				//car.rotateY(-Math.PI / 2);
 				car.add(camera);
 				carControls = new CarControls(car, camera, carPhysicsProperties.move_speed, carPhysicsProperties.turn_speed, THREE, CANNON, physicsWorld, groundMat);
 				carBody = carControls.createRigidBody();
-				//meshes.push(car);
-				//physicsWorld.addBody(body);
-				//bodies.push(body);
 				wheelBodies = carControls.wheelBodies;
 				wheelMat = new THREE.MeshPhongMaterial(CarModelLoader.getMaterialsObject().tyre_colour);
 				wheelMat.wireframe = true;
@@ -262,24 +244,14 @@
 				carControls.move();
 				updateHud()
 			}
-			/* player.move()
-			if (!chunkSystemFlag) {
-				chunkSystemFlag = true
-				chunkSystem = new ChunkSystem(50, 16, 2, player, scene, physicsWorld, seed)
-			}
-			chunkSystem.updateChunk(player) */
-
 			updatePhysics(deltaTime);
 			//cannonDebugger.update()
 
 			updateCamera();
 
-			//call the render with the scene and the camera
 			renderer.render(scene, camera);
 
 			controls.update();
-
-			
 
 			if (!guiBuilt) {
 				if (CarModelLoader.matLoaded) {
@@ -287,8 +259,6 @@
 					buildGUI()
 				}
 			}
-			//finally perform a recoursive call to update again
-			//this must be called because the mouse change the camera position
 			requestAnimationFrame(MyUpdateLoop);
 		};
 
@@ -301,7 +271,6 @@
 			}
 
 			if (car != null) {
-				//delta = camera.quaternion;
 				car.position.copy(carBody.chassisBody.position);
 				car.quaternion.copy(carBody.chassisBody.quaternion);
 				var newLightPos = new THREE.Vector3();
@@ -318,14 +287,13 @@
 
 		function updateCamera() {
 			if (car != null) {
-				//camera.quaternion.copy(delta);
 				camera.lookAt(car.position);
 			}
 		}
 
 		requestAnimationFrame(MyUpdateLoop);
 
-		//this fucntion is called when the window is resized
+		// Resize window function
 		var MyResize = function () {
 			var width = window.innerWidth;
 			var height = window.innerHeight;
@@ -334,14 +302,11 @@
 			camera.updateProjectionMatrix();
 			renderer.render(scene, camera);
 		};
-
-		//link the resize of the window to the update of the camera
 		window.addEventListener('resize', MyResize);
 
+		// Reset car position
 		const onKeyDown = (event) => {
 			switch (event.keyCode) {
-				//case 32:
-				//CarModelLoader.updateCarMaterial(0xFF0000, 0xFFFFFF, 0xFFFFFF, 0x000000, 0xFFFFFF)
 				case 82:
 					resetCarPos.reset_car();
 					break;
@@ -349,6 +314,7 @@
 		}
 		window.addEventListener('keydown', onKeyDown, false)
 
+		// Terrain properties
 		let seedHTML = ""
 		var terrain_properties = {
 			peak_height: peakHeight,
@@ -362,6 +328,7 @@
 					terrainSeed = Math.random()
 					terrain_properties.current_seed = terrainSeed
 				}
+				terrain_properties.current_seed = terrainSeed
 				chunkSystem.removeAllChunks();
 				resetCarPos.reset_car();
 				carBody.chassisBody.position.y += peakHeight + 2;
@@ -373,6 +340,7 @@
 			}
 		};
 
+		// GUI
 		var gui
 		var carColours
 		var carPhysics
@@ -402,6 +370,7 @@
 			worldPropertyGUI.add(worldProperties, 'fog_near', 0, 1500, 1).onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
 			worldPropertyGUI.add(worldProperties, 'fog_far', 10, 2000, 1).onChange(_ => scene.fog = new THREE.Fog(worldProperties.fog_colour, worldProperties.fog_near, worldProperties.fog_far))
 
+			// Terrain Properties folder
 			terrainPropertiesGUI = gui.addFolder('Terrain Properties');
 			terrainPropertiesGUI.add(terrain_properties, 'peak_height').onChange(val => { peakHeight = val; }).name("Terrain Peak Height");
 			terrainPropertiesGUI.add(terrain_properties, 'terrain_smoothing').onChange(val => { terrainSmoothing = val }).name("Terrain Smoothing");
@@ -409,6 +378,7 @@
 			terrainPropertiesGUI.add(terrain_properties, 'reset_terrain').name("Reset Terrain");
 			terrainPropertiesGUI.add(terrain_properties, 'get_seed').name("Get Seed");
 
+			// Terrain Colour folder
 			terrainColourGUI = terrainPropertiesGUI.addFolder('Terrain Colours')
 			terrainColourGUI.addColor(terrainColour, 'grass').name("Grass")
 			terrainColourGUI.addColor(terrainColour, 'snow').name("Snow")
@@ -428,6 +398,7 @@
 			guiBuilt = true
 		}
 
+		// HUD
 		const handbrakeActiveColour = 'red'
 		const handbrakeInactiveColour = '#69ff69'
 		const infoEl = document.getElementById("info")
